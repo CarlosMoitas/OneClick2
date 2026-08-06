@@ -1,0 +1,47 @@
+<section>
+  <app-alerta-card title="# Chamar BFF">
+    Aqui nesse exemplo preste atenção nos headers da requisição HTTP. Veja se temos dados de geoloalização e o cookie
+    <b>CCCC-CSRF-TOKEN</b> sendo passados.
+  </app-alerta-card>
+
+  <app-alerta-card type="warning" class="brad-m-md-t d-block">
+    O cookie <b>CCCC-CSRF-TOKEN</b> é gerado pelo backend. Para teste local podemos criar manualmente no devtools do
+    navegador com qualquer valor.
+  </app-alerta-card>
+
+  <div class="brad-m-md-t">
+    <button class="brad-btn brad-btn-primary brad-btn-floating brad-font-button" (click)="enviar()" [disabled]="isLoading">
+      Chamar API de teste
+    </button>
+  </div>
+
+  @if(dados$ | async; as data) { @for (item of data; track item.id; let i = $index) {
+  <div class="brad-p-lg-t">
+    <div class="brad-card">
+      <div id="accordion-{{ i }}" class="brad-accordion remove-border-top">
+        <div class="brad-accordion__header brad-accordion__line brad-font-title-sm" (click)="abreFechaCard(i)">
+          <div class="brad-accordion__title">
+            <h2 class="brad-font-title-sm">
+              # {{ item.id }}
+            </h2>
+          </div>
+          <div class="brad-accordion__custom-title"></div>
+          <span class="brad-accordion__icon i icon-navigation-chevron-down"></span>
+        </div>
+        <div class="brad-accordion__content hidden-content brad-font-paragraph-sm colorText">
+          <p><strong>DESCRI&Ccedil;&Atilde;O &rarr;</strong> {{ item.descricao }}</p>
+          <p><strong>VALOR &rarr;</strong> {{ item.valor | currency : 'BRL' }}</p>
+          <p><strong>CANAL &rarr;</strong> {{ item.canal }}</p>
+          <p><strong>DATA &rarr;</strong> {{ item.data | date }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  } }
+
+  <div class="rodape">
+    <button class="brad-m-sm-t brad-btn brad-btn-secondary brad-btn-floating brad-font-button" (click)="voltar()">
+      Voltar
+    </button>
+  </div>
+</section>

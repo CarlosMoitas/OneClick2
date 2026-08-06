@@ -1,0 +1,141 @@
+openapi: 3.0.3
+info:
+  title: FED Node NPM Template Mock API
+  version: 1.0.0
+  description: |
+    API - First | Contrato simples de OpenAPI para executar com Prism.
+    Espelha a rota de exemplo atual do backend.js e as verificações de autenticação.
+servers:
+  - url: http://localhost:3000
+paths:
+  /bff-canais/{produto}/{versao}/{canal}/check-request:
+    get:
+      summary: Mock request check endpoint
+      description: |
+        Example BFF GET route for local SPA tests.
+        Expected request has header x-csrf-token and a session cookie.
+      operationId: getCheckRequest
+      security:
+        - csrfHeader: []
+          sessionCookie: []
+      parameters:
+        - name: produto
+          in: path
+          required: true
+          schema:
+            type: string
+          example: template
+        - name: versao
+          in: path
+          required: true
+          schema:
+            type: string
+          example: v1
+        - name: canal
+          in: path
+          required: true
+          schema:
+            type: string
+          example: mock-v1
+      responses:
+        '200':
+          description: Successful mock response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseItem'
+              examples:
+                default:
+                  value:
+                    - id: 1
+                      descricao: Item A
+                      canal: mock-v1
+                      data: '2026-07-21T10:00:00.000Z'
+                      valor: 100.67
+                    - id: 2
+                      descricao: Item B
+                      canal: mock-v1
+                      data: '2026-07-21T10:00:00.000Z'
+                      valor: 250
+        '401':
+          description: Missing csrf header or session cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+              examples:
+                missingCredentials:
+                  value:
+                    mock: true
+                    error: unauthorized
+                    message: Requisicao negada pelo mock por falta de credenciais esperadas.
+                    missing:
+                      - header x-csrf-token
+                      - cookie no formato MOCK-SESSIONID
+components:
+  securitySchemes:
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: x-csrf-token
+      description: CSRF token sent by SPA interceptor.
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: MOCK-SESSIONID
+      description: |
+        Example cookie name used in local tests.
+        In real projects, the prefix may vary, but a PREFIX-SESSIONID cookie is expected.
+  schemas:
+    ResponseItem:
+      type: object
+      required:
+        - id
+        - descricao
+        - canal
+        - data
+        - valor
+      properties:
+        id:
+          type: integer
+          example: 1
+        descricao:
+          type: string
+          example: Item A
+        canal:
+          type: string
+          example: mock-v1
+        data:
+          type: string
+          format: date-time
+          example: '2026-07-21T10:00:00.000Z'
+        valor:
+          type: number
+          format: double
+          example: 100.67
+    UnauthorizedError:
+      type: object
+      required:
+        - mock
+        - error
+        - message
+        - missing
+      properties:
+        mock:
+          type: boolean
+          example: true
+        error:
+          type: string
+          example: unauthorized
+        message:
+          type: string
+          example: Requisicao negada pelo mock por falta de credenciais esperadas.
+        missing:
+          type: array
+          items:
+            type: string
+          example:
+            - header x-csrf-token
+            - cookie no formato MOCK-SESSIONID

@@ -1,0 +1,72 @@
+<div class="content" role="main">
+
+  <!-- Resources -->
+  <h2>Recursos</h2>
+  <p>Alguns links e exemplos que podem ajudar:</p>
+
+
+  <div class="brad-card brad-p-md brad-m-sm-y">
+    <em class="i icon-navigation-forward"></em>
+    <a routerLink="/exemplos">
+      <span class="brad-font-link"> Exemplos</span>
+    </a>
+  </div>
+
+  <div class="brad-card brad-p-md brad-m-sm-b">
+    <em class="i icon-ui-share"></em>
+    <a href="{{ internalUrls.bradescodeFed }}" target="_blank" rel="noopener noreferrer">
+      <span class="brad-font-link"> Bradescode - FED</span>
+    </a>
+  </div>
+
+  <div class="brad-card brad-p-md brad-m-sm-b">
+    <em class="i icon-ui-menu-settings"></em>
+    <a href="{{ internalUrls.bradescodeDevTools }}" target="_blank" rel="noopener noreferrer">
+      <span class="brad-font-link"> Bradescode - DevTools</span>
+    </a>
+  </div>
+
+  <div class="brad-card brad-p-md brad-m-sm-b">
+    <em class="i icon-financial-analyze-review"></em>
+    <a href="https://angular.io/cli" target="_blank" rel="noopener noreferrer">
+      <span class="brad-font-link"> CLI Documentation</span>
+    </a>
+  </div>
+
+  <!-- Next Steps -->
+  <h2>Próximos passos</h2>
+  <p>O que você pretente fazer?</p>
+
+  <input type="hidden" #selection>
+
+  <button id="rodar-devtools" class="brad-card brad-p-md brad-m-sm-y" (click)="selection.value = 'devtools'">
+    <em class="i icon-filetype-play"></em>
+    <span> Rodar DevTools</span>
+  </button>
+
+  <button id="rodar-testes-cobertura" class="brad-card brad-p-md brad-m-sm-y" (click)="selection.value = 'test'">
+    <em class="i icon-filetype-play"></em>
+    <span> Rodar testes e cobertura</span>
+  </button>
+
+  <button id="build-producao" class="brad-card brad-p-md brad-m-sm-b" (click)="selection.value = 'build'">
+    <em class="i icon-filetype-play"></em>
+    <span> Build de produção</span>
+  </button>
+
+  <!-- Terminal -->
+  @if(selection.value){
+  <div class="terminal">
+    @switch (selection.value) {
+    @case ("devtools") {
+    <pre>npm run devtools --schema=nome-do-schematic</pre>
+    }
+    @case ("test") {
+    <pre>npm run test</pre>
+    }
+    @case ("build") {
+    <pre>npm run build</pre>
+    }
+    }
+  </div>
+  }

@@ -1,0 +1,21 @@
+<section>
+  <app-alerta-card title="# Autorizador Cloud">
+    Acesse a documentação no confluence para mais informações.
+    <button
+      class="brad-alert__link brad-btn brad-btn-text brad-btn-text--no-bg brad-btn--auto"
+      (click)="openLink('https://confluence.bradesco.com.br:8443/display/CPBCD/13.13+FED+%7C+Autorizador+cloud+-+Leap')"
+    >
+      <span>gacb-lib-fed-authz-transacao</span>
+    </button>
+  </app-alerta-card>
+
+  <app-alerta-card type="error" title="# Atenção!">
+    No momento a biblioteca do autorizador cloud não tem versão compátivel com <b>Angular 21</b>. Se o seu projeto
+    estiver usando <b>Angular 21</b> e precisa do autotizador cloud, entre em contato com o time responsável pela
+    bilbioteca para saber quando será feita a atualização.
+  </app-alerta-card>
+
+  <div class="rodape">
+    <button class="brad-btn brad-btn-primary brad-btn-floating brad-font-button" (click)="voltar()">Voltar</button>
+  </div>
+</section>

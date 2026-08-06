@@ -1,0 +1,33 @@
+name: Rollback
+run-name: Rollback version tag ${{ inputs.artifact-version }} in ${{ inputs.environment }} - ${{ inputs.change-number }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact-version:
+        type: string
+        description: 'Artifact version'
+        required: true
+
+      change-number:
+        description: "Inform the change number (ex: CHG000000)"
+        required: true
+        type: string
+
+      environment:
+        type: choice
+        description: 'Environment'
+        required: true
+        options:
+          - HOM
+          - PRD
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  call-rollback:
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-deploy-release.yaml@latest
+    with:
+      version: ${{ inputs.artifact-version }}
+      environment: ${{ inputs.environment }}
+    secrets: inherit

@@ -1,0 +1,9 @@
+var appConfig = {
+	urlAPI: "{{ deploy.app_config.urlAPI }}"
+};
+
+var script = document.createElement("script");
+script.src = "{{ deploy.app_config.urlMonitoramento }}";
+script.crossorigin="anonymous";
+script.defer = true;
+document.head.appendChild(script);

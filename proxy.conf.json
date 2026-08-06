@@ -1,0 +1,8 @@
+{
+  "/dsysliquid/": {
+    "target": "https://static.bradesco.com.br",
+    "logLevel": "debug",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

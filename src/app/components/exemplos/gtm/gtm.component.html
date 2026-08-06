@@ -1,0 +1,43 @@
+<!-- Toolbar -->
+
+<section>
+  @if (!hasDataLayer) {
+  <app-alerta-card type="error" title="# Exemplo de GTM">
+    <p>
+      Script GTM ou service de monitoramento não encontrado, botão de teste desabilitado. Para instalar utilize o DevTools (thgv-lib-fed-devtools)
+      ou adicione o script do GTM no <b>index.html</b> do projeto manualmente, seguindo a documentação oficial do Google Tag Manager.
+    </p>
+
+    <p></p>
+    <p class="brad-m-md-t">
+      Uma vez que o script esteja sendo importado, voce pode habilitar os trechos de codigo comentados no arquivo <b>gtm.component.ts</b> e
+      utilizar essa pagina para testar as integraçoes do GTM.
+    </p>
+    <p class="brad-m-md-t">
+      Obs:. Lembre-se de usar o ID de container correto para o ambiente.
+    </p>
+  </app-alerta-card>
+  }
+  @else {
+  <app-alerta-card type="success" title="# Exemplo de GTM">
+    <p>
+      Google Tag Manager encontrado e service de monitoramento importado com sucesso. Para teste local estamos usando <b>console.log</b> no
+      <b>monitoramento.service.ts</b>. Não esqueça de remover
+      quando for subir o código no ambiente.
+    </p>
+
+    <p></p>
+    <p class="brad-m-md-t">
+      Uma vez validado local, modifique o <b>monitoramento.service.ts</b> removendo o <b>console.log</b> e faça testes
+      integrados no ambiente juntamento com o time de monitoramento.
+    </p>
+  </app-alerta-card>
+  }
+  <div class="rodape">
+    <button [disabled]="!hasDataLayer" class="brad-btn brad-btn-primary brad-btn-floating brad-font-button"
+      (click)="enviar()">Testar GTM</button>
+    <button class="brad-m-sm-t brad-btn brad-btn-secondary brad-btn-floating brad-font-button" (click)="voltar()">
+      Voltar
+    </button>
+  </div>
+</section>

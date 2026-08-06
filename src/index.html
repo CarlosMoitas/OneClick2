@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Bradesco</title>
+  <base href="/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="app-version" content="[[VERSION]]" />
+  <!-- load do app config -->
+  <script defer src="assets/config/app-config.js?[[VERSION]]" type="application/javascript"></script>
+</head>
+
+<body>
+  <app-root></app-root>
+  <script>
+    (function () {
+      window.getVoltar = function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.dispatchEvent(new Event('voltar'));
+      };
+    })();
+  </script>
+</body>
+
+</html>

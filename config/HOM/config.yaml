@@ -1,0 +1,9 @@
+app:
+  name: fed-node-npm-template
+  centro_custo: leap
+  value_stream: leap
+deploy:
+  environment: HOM
+  app_config:
+    urlAPI: "https://api-platca.apps.platcan.prebanco.com.br/bff-canais/projeto/v1"
+    urlMonitoramento: "https://js-cdn.dynatrace.com/jstag/17cdb8fd6ce/bf29785jwi/<id_aplicacao_web>_complete.js"

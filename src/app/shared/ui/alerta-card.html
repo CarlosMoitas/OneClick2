@@ -1,0 +1,17 @@
+<div class="brad-alert" [class]="'brad-m-md-t brad-alert--' + type()">
+  <div class="brad-alert__icon">
+    <em [class]="iconClass() + ' d-flex'"></em>
+  </div>
+
+  <div class="brad-alert__content">
+    @if (title()) {
+    <h1 class="brad-alert__title brad-font-title-md">{{ title() }}</h1>
+    }
+
+    <div class="brad-alert__body">
+      <div class="brad-alert__body__middle brad-font-paragraph-sm">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

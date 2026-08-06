@@ -1,0 +1,28 @@
+name: Rollback Apache
+run-name: Rollback version tag ${{ inputs.artifact-version }} in ${{ inputs.environment }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact-tag:
+        type: string
+        description: 'Artifact tag'
+        required: true
+
+      environment:
+        type: choice
+        description: 'Environment'
+        required: true
+        options:
+          - HOM
+          - PRD
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  call-rollback:
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/apache-http-server-rollback.yaml@latest
+    with:
+      artifact-version: ${{ inputs.artifact-tag }}
+      environment: ${{ inputs.environment }}
+    secrets: inherit

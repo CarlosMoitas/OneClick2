@@ -1,0 +1,180 @@
+name: Workflow SLV - FED
+
+on:
+  push:
+    branches:
+      - slv-dv/*
+      - slv-ho/*
+      - slv/unstable
+    paths-ignore:
+      - '.github/workflows/**'
+
+  workflow_dispatch:
+    inputs:
+      unique-id:
+        description: 'Identificador único da execução'
+        required: true
+        type: string
+      environment:
+        description: 'Ambiente de destino (DEV ou HOM)'
+        required: true
+        type: choice
+        options:
+          - DEV
+          - HOM
+        default: 'DEV'
+      build-version:
+        description: 'Versão do build'
+        required: true
+        type: string
+      dependency-services:
+        description: 'Lista de serviços dependentes (JSON array, ex: ["svc-a","svc-b"])'
+        required: false
+        type: string
+        default: '[]'
+      enable-security-gates:
+        description: 'Habilitar gates de segurança (obrigatório para HOM, opcional para DEV)'
+        required: false
+        type: boolean
+        default: false
+      repository-type:
+        description: 'Type of repository (snapshot, release)'
+        required: true
+        type: string
+      callback-url:
+        description: 'BEX callback URL (overrides default host)'
+        required: false
+        type: string
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+jobs:
+  init-status:
+    if: github.event_name == 'workflow_dispatch'
+    name: Init Status BEX
+    runs-on: ${{ contains(inputs.callback-url || '', 'devplatform.corpp.bradesco.com.br') && vars.RUNNER_HOM_LOW || contains(inputs.callback-url || '', 'devplatform.net.bradesco.com.br') && vars.RUNNER_PRD_LOW || vars.RUNNER_DEV_LOW }}
+    timeout-minutes: 5
+    steps:
+      - name: Initial status submission to BEX
+        id: init-status
+        uses: Bradesco-Actions/bex-status-send@v1
+        with:
+          trilha: ${{ inputs.unique-id }}
+          kv_creds: ${{ secrets.SPN_KV_DEV_SECRET }}
+          kv_name: ${{ vars.GH_KV_DEV }}
+          component: ${{ github.event.repository.name }}
+          event_type: "PROVISIONAMENTO"
+          event_status: "PROGRESS"
+          message: "Iniciando Provisionamento"
+          callback-url: ${{ inputs.callback-url }}
+
+  detect-environment:
+    name: Detect environment
+    runs-on: ${{ vars.RUNNER_DEV_LOW || vars.RUNNER_DEFAULT }}
+    timeout-minutes: 5
+    concurrency:
+      group: environment-detect-${{ github.ref }}-${{ github.run_id }}
+      cancel-in-progress: true
+    outputs:
+      environment: ${{ steps.setenv.outputs.environment || 'DEV' }}
+      unique-id: ${{ github.event_name == 'workflow_dispatch' && inputs.unique-id }}
+      build-version: ${{ github.event_name == 'workflow_dispatch' && inputs.build-version || '' }}
+      dependency-services: ${{ github.event_name == 'workflow_dispatch' && inputs.dependency-services || '[]' }}
+      enable-security-gates: ${{ (github.event_name == 'workflow_dispatch' && inputs.environment == 'HOM') || (github.event_name == 'push' && startsWith(github.ref_name, 'slv-ho/')) || (github.event_name == 'workflow_dispatch' && inputs.environment == 'DEV' && inputs.enable-security-gates) }}
+    steps:
+      - name: Set environment from branch
+        id: setenv
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ inputs.environment }}" >> "$GITHUB_OUTPUT"
+            echo "Detectado ambiente ${{ inputs.environment }} via workflow_dispatch"
+          else
+            ref="${GITHUB_REF_NAME}"
+            if [[ "$ref" == slv-dv/* ]]; then
+              echo "environment=DEV" >> "$GITHUB_OUTPUT"
+              echo "Detectado ambiente DEV" 
+            elif [[ "$ref" == slv-ho/* ]]; then
+              echo "environment=HOM" >> "$GITHUB_OUTPUT"
+              echo "Detectado ambiente HOM"
+            elif [[ "$ref" == slv/unstable ]]; then
+              echo "environment=HOM" >> "$GITHUB_OUTPUT"
+              echo "Detectado ambiente HOM - UNSTABLE"
+            else
+              echo "environment=DEV" >> "$GITHUB_OUTPUT"
+              echo "Fallback para DEV"
+            fi
+          fi
+        shell: bash
+
+  validate:
+    name: Quota check - Short-Lived Version
+    if: github.ref_name != 'slv/unstable'
+    needs: detect-environment
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/sla-ephemeral-fed-validate.yaml@latest
+    with:
+      environment: ${{ needs.detect-environment.outputs.environment }}
+      unique-id: ${{ needs.detect-environment.outputs.unique-id }}
+    secrets: inherit
+
+  build:
+    needs: [detect-environment, validate]
+    if: always() && !cancelled() && (needs.validate.result == 'success' || needs.validate.result == 'skipped') && github.event_name != 'workflow_dispatch'
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-angular-build-sandbox.yaml@latest
+    with:
+      enabled-fortify: ${{ fromJSON(format('{0}', needs.detect-environment.outputs.environment == 'HOM' || 'false')) }}
+      enabled-sonar: ${{ fromJSON(format('{0}', needs.detect-environment.outputs.environment == 'HOM' || 'false')) }}
+      enabled-mend: ${{ fromJSON(format('{0}', needs.detect-environment.outputs.environment == 'HOM' || 'false')) }}
+    secrets: inherit
+  
+  ephem-config:
+    name: Directory config - Short-Lived Version
+    needs: [detect-environment, validate, build]
+    if: always() && !cancelled() && (needs.validate.result == 'success' || needs.validate.result == 'skipped') && (needs.build.result == 'success' || needs.build.result == 'skipped')
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/sla-ephemeral-fed-deploy.yaml@latest
+    with:
+      version: ${{ needs.build.outputs.version || needs.detect-environment.outputs.build-version }}
+      package-group: ${{ needs.build.outputs.package-group || needs.validate.outputs.package-group }}
+      environment: ${{ needs.detect-environment.outputs.environment }}
+      unique-id: ${{ needs.detect-environment.outputs.unique-id }}
+      repository-type: ${{ github.event_name != 'workflow_dispatch' && 'snapshot' || inputs.repository-type }}
+    secrets: inherit
+
+  final-status:
+    name: Final Status BEX
+    needs:
+      - init-status
+      - detect-environment
+      - validate
+      - build
+      - ephem-config
+    if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+    runs-on: ${{ contains(inputs.callback-url || '', 'devplatform.corpp.bradesco.com.br') && vars.RUNNER_HOM_LOW || contains(inputs.callback-url || '', 'devplatform.net.bradesco.com.br') && vars.RUNNER_PRD_LOW || vars.RUNNER_DEV_LOW }}
+    timeout-minutes: 5
+    steps:
+      - name: Send SUCCESS to BEX
+        if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+        uses: Bradesco-Actions/bex-status-send@v1
+        with:
+          trilha: ${{ inputs.unique-id }}
+          kv_creds: ${{ secrets.SPN_KV_DEV_SECRET }}
+          kv_name: ${{ vars.GH_KV_DEV }}
+          component: ${{ github.event.repository.name }}
+          event_type: "PROVISIONAMENTO"
+          event_status: "SUCCESS"
+          message: "Provisionamento concluído com sucesso"
+          callback-url: ${{ inputs.callback-url }}
+      
+      - name: Send FAILURE to BEX
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        uses: Bradesco-Actions/bex-status-send@v1
+        with:
+          trilha: ${{ inputs.unique-id }}
+          kv_creds: ${{ secrets.SPN_KV_DEV_SECRET }}
+          kv_name: ${{ vars.GH_KV_DEV }}
+          component: ${{ github.event.repository.name }}
+          event_type: "PROVISIONAMENTO"
+          event_status: "FAILURE"          
+          message: "Provisionamento falhou"
+          callback-url: ${{ inputs.callback-url }}

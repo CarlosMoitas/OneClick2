@@ -1,0 +1,28 @@
+name: Workflow DAST Scan Fortify
+on:
+
+  workflow_dispatch:
+    inputs:
+      url:
+        type: string
+        description: 'Informe a URL em que o Scan DAST será realizado'
+        required: true
+      synchronous:
+        description: 'Quer esperar pelos resultados?'
+        required: true
+        type: choice
+        options:
+          - true
+          - false
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  DAST:
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-dast.yaml@latest
+    with:
+      url: ${{ inputs.url }}
+      synchronous: ${{ inputs.synchronous }}
+    secrets: inherit
+      

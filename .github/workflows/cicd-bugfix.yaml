@@ -1,0 +1,47 @@
+name: Node FED Bugfix
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release/**
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  call-build:
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-angular-build-release.yaml@latest
+    with:
+      enabled-fortify: ${{ inputs.enabled-fortify || vars.G_FORTIFY_SAST_SNAPSHOT_ENABLED }}
+      enabled-sonar: ${{ inputs.enabled-sonar || vars.G_SONARQUBE_SNAPSHOT_ENABLED }}
+    secrets: inherit
+
+  call-deploy-dev:
+    needs: call-build
+    if: github.event_name == 'create' && github.ref == 'refs/heads/release'
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-deploy-release.yaml@latest
+    with:
+      version: ${{ needs.call-build.outputs.version }}
+      package-group: ${{ needs.call-build.outputs.package-group }}
+      environment: 'HOM'
+    secrets: inherit
+
+  call-deploy-hom:
+    needs: call-deploy-dev
+    if: github.event_name == 'create' && github.ref == 'refs/heads/release'
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-deploy-release.yaml@latest
+    with:
+      version: ${{ needs.call-build.outputs.version }}
+      package-group: ${{ needs.call-build.outputs.package-group }}
+      environment: 'HOM'
+    secrets: inherit
+
+  call-deploy-prd:
+    needs: call-deploy-hom
+    if: github.event_name == 'create' && github.ref == 'refs/heads/release'
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-deploy-release.yaml@latest
+    with:
+      version: ${{ needs.call-build.outputs.version }}
+      package-group: ${{ needs.call-build.outputs.package-group }}
+      environment: 'PRD'
+    secrets: inherit

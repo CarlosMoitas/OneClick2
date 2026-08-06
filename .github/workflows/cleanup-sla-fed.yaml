@@ -1,0 +1,45 @@
+name: Cleanup ephemeral feds
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Executar em modo simulação (sem exclusões reais)'
+        required: false
+        type: boolean
+        default: false
+      cleanup-days:
+        description: 'Dias de retenção para limpeza'
+        required: false
+        type: number
+        default: 1
+      trilha:
+        description: 'trilha específica de cleanup (opcional, padrão: todas as trilhas)'
+        required: false
+        type: string
+        default: "*"
+
+jobs:
+  cleanup-dev:
+    name: Cleanup DEV
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/sla-ephemeral-fed-cleanup.yaml@latest
+    if: github.event.repository.custom_properties.has-slv == 'true'
+    with:
+      environment: DEV
+      dry-run: ${{ fromJSON(format('{0}', inputs.dry-run || 'false')) }}
+      cleanup-days: ${{ fromJSON(format('{0}', inputs.cleanup-days || '1')) }}
+      trilha: ${{ inputs.trilha }}
+    secrets: inherit
+
+  cleanup-hom:
+    name: Cleanup HOM
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/sla-ephemeral-fed-cleanup.yaml@latest
+    if: github.event.repository.custom_properties.has-slv == 'true'
+    with:
+      environment: HOM
+      dry-run: ${{ fromJSON(format('{0}', inputs.dry-run || 'false')) }}
+      cleanup-days: ${{ fromJSON(format('{0}', inputs.cleanup-days || '1')) }}
+      trilha: ${{ inputs.trilha }}
+    secrets: inherit

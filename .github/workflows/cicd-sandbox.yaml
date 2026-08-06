@@ -1,0 +1,61 @@
+name: Node FED sandbox
+on:
+
+  workflow_dispatch:
+    inputs:
+      build-deploy:
+        description: "Realizar Build + deploy em DEV"
+        required: false
+        default: Somente Build
+        type: choice
+        options:
+          - Somente Build
+          - Build + Deploy
+      enabled-fortify:
+        description: "Habilitar Fortify SAST"
+        required: false
+        default: true
+        type: choice
+        options:
+          - true
+          - false
+      enabled-sonar:
+        description: "Habilitar testes Sonarqube"
+        required: false
+        default: true
+        type: choice
+        options:
+          - true
+          - false
+      enabled-mend:
+        description: "Habilitar Scan Mend"
+        required: true
+        default: true
+        type: choice
+        options:
+          - true
+          - false
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+jobs:
+  call-build:
+    if: ${{ inputs.build-deploy }}
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-angular-build-sandbox.yaml@latest
+    with:
+      enabled-fortify: ${{ inputs.enabled-fortify || vars.G_FORTIFY_SAST_SNAPSHOT_ENABLED }}
+      enabled-sonar: ${{ inputs.enabled-sonar || vars.G_SONARQUBE_SNAPSHOT_ENABLED }}
+      enabled-mend: ${{ inputs.enabled-mend || vars.G_MEND_SNAPSHOT_ENABLED }}
+    secrets: inherit
+
+  call-deploy-dev:
+    needs: call-build
+    if: ${{ inputs.build-deploy == 'Build + Deploy' }}
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-deploy-sandbox.yaml@latest
+    with:
+      version: ${{ needs.call-build.outputs.version }}
+      package-group: ${{ needs.call-build.outputs.package-group }}
+      environment: DEV
+    secrets: inherit

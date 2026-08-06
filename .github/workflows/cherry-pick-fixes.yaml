@@ -1,0 +1,19 @@
+name: Workflow Cherry Pick
+
+on:
+  pull_request:
+    types:
+      - closed
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'mkdocs.yaml'
+      - 'docs/**.md'
+
+jobs:
+  call-cherry-pick:
+    if: >-
+      github.event.pull_request.merged == true &&
+      (startsWith(github.event.pull_request.head.ref, 'bugfix') || startsWith(github.event.pull_request.head.ref, 'hotfix'))
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/cherry-pick-fixes.yaml@latest
+    secrets: inherit

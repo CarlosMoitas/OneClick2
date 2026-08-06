@@ -1,0 +1,19 @@
+name: Techdocs
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Ambiente de deploy"
+        required: true
+        default: "DEV"
+        type: "choice"
+        options:
+          - DEV
+          - HOM
+          - PRD
+jobs:
+  Techdocs:
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/backstage-techdocs.yaml@latest
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit

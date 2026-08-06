@@ -1,0 +1,59 @@
+name: Node FED Release
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - release/**
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'mkdocs.yaml'
+      - 'docs/**.md'
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  call-build:
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-angular-build-release.yaml@latest
+    with:
+      enabled-fortify: ${{ inputs.enabled-fortify || vars.G_FORTIFY_SAST_SNAPSHOT_ENABLED }}
+      enabled-sonar: ${{ inputs.enabled-sonar || vars.G_SONARQUBE_SNAPSHOT_ENABLED }}
+      enabled-mend: ${{ vars.G_MEND_RELEASE_ENABLED }}
+    secrets: inherit
+
+  call-deploy-hom:
+    needs: call-build
+    # Skip deploy to HOM if hotfix
+    if: ${{ ! startsWith(needs.call-build.outputs.pull-request-head-ref, 'cherry-picked-hotfix/') }}
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-deploy-release.yaml@latest
+    with:
+      version: ${{ needs.call-build.outputs.version }}
+      package-group: ${{ needs.call-build.outputs.package-group }}
+      environment: 'HOM'
+    secrets: inherit
+
+  call-change-velocity:
+    if: success() || ( startsWith(needs.call-build.outputs.pull-request-head-ref, 'cherry-picked-hotfix/') && needs.call-build.result == 'success')
+    needs: [ call-build, call-deploy-hom ]
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-change-velocity.yaml@latest
+    with:
+        package-name: ${{ needs.call-build.outputs.package-name }}
+        version: ${{ needs.call-build.outputs.version }}
+        sonar-project-key: ${{ needs.call-build.outputs.sonar-project-key }}
+        mend-report: ${{ needs.call-build.outputs.mend-report }}
+        mend-files: ${{ needs.call-build.outputs.mend-files }}
+        fortify-report: ${{ needs.call-build.outputs.fortify-report }}
+        fortify-files: ${{ needs.call-build.outputs.fortify-files }}
+    secrets: inherit
+
+  call-deploy-prd:
+    if: success() || ( startsWith(needs.call-build.outputs.pull-request-head-ref, 'cherry-picked-hotfix/') && needs.call-build.result == 'success' )
+    needs: [call-build, call-deploy-hom, call-change-velocity]
+    uses: Bradesco-Core/reusable-workflows/.github/workflows/fed-deploy-release.yaml@latest
+    with:
+      version: ${{ needs.call-build.outputs.version }}
+      package-group: ${{ needs.call-build.outputs.package-group }}
+      environment: 'PRD'
+    secrets: inherit

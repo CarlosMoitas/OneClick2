@@ -1,0 +1,25 @@
+# Suporte a iOS 15.5 com máximo de recursos TypeScript/Angular modernos
+#
+# Constraints:
+# - iOS >= 15.5: Safari em iOS 15.5 e posteriores
+# - ios_saf >= 15: Safari iOS versão 15+
+# - Safari >= 15: Safari desktop versão 15+
+# - Chrome >= 138: Android Chrome 138+
+# - not dead: Browsers ainda suportados pelo fabricante
+#
+# iOS 15 suporta:
+# - ES2022 (Harmony features adicionados gradualmente)
+# - Modern Web APIs (AbortController, structuredClone, etc)
+# - Async/await, Promise
+# - Classes, destructuring
+# - Array methods: flat, flatMap, at, findLast, etc
+#
+# Usar core-js para polyfills de APIs ainda faltantes
+
+iOS >= 15.5
+ios_saf >= 15
+Safari >= 15
+and_chr >= 138
+ff >= 128
+not dead
+not op_mini all
