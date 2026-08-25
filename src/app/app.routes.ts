@@ -1,31 +1,24 @@
 import { Routes } from '@angular/router';
-import { welcomeGuard } from './core/guards/welcome.guard';
+import { authGuard } from './core/guards/auth.guard';
+import { ChatPage } from './chat/chat-page/chat-page';
 
 export const routes: Routes = [
-  // @todo: Rota padrão agora vai para boas-vindas com guard de controle
-  { path: '', pathMatch: 'full', redirectTo: 'welcome' },
   {
-    title: 'Boas-vindas',
-    path: 'welcome',
-    canActivate: [welcomeGuard],
-    loadComponent: () =>
-      import('./components/welcome/welcome.component').then((m) => m.WelcomeComponent),
+    path: 'login',
+    loadComponent: () => import('./features/login/login').then((m) => m.Login),
   },
   {
-    title: 'Home da jornada',
-    path: 'home',
-    loadComponent: () => import('./components/home/home.component').then((m) => m.HomeComponent),
+    // Página de aprovação do BEX Design System — sem guard de autenticação
+    path: 'design-preview',
+    loadComponent: () => import('./features/design-preview/design-preview').then((m) => m.DesignPreview),
   },
   {
-    title: 'Menu de Exemplos',
-    path: 'exemplos',
-    loadChildren: () =>
-      import('./components/exemplos/exemplos.routes').then((m) => m.EXEMPLOS_ROUTES),
+    path: 'chat',
+    component: ChatPage,
   },
   {
-    title: 'Página de Erro',
-    path: 'erro',
-    loadChildren: () => import('./core/error/error.routes').then((m) => m.ERROR_ROUTES),
+    path: '',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/home/home').then((m) => m.Home),
   },
-  { path: '**', redirectTo: 'erro' },
 ];

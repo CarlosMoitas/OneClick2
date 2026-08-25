@@ -1,36 +1,27 @@
-import {
-  ApplicationConfig,
-  DEFAULT_CURRENCY_CODE,
-  ErrorHandler,
-  LOCALE_ID,
-  provideBrowserGlobalErrorListeners,
-  provideZonelessChangeDetection
-} from '@angular/core';
-import { provideRouter, withHashLocation } from '@angular/router';
-
-import { registerLocaleData } from '@angular/common';
+import { ApplicationConfig } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import localePt from '@angular/common/locales/pt';
+import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { AppErrorHandler } from './core/error/app-error-handler';
-import { requestInterceptor } from './core/interceptors/request.interceptor';
-
-registerLocaleData(localePt, 'pt');
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { correlationIdInterceptor } from './core/interceptors/correlation-id.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+import { retryInterceptor } from './core/interceptors/retry.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZonelessChangeDetection(),
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withHashLocation()),
-    /**
-     * Caso seu projeto tenha log de negócio, considere utilizar o interceptor "logDeviceInterceptor".
-     * O interceptor depende da dependência @bradesco/rast-lib-device-interceptor-logging@21
-     * Voce pode utilizar o comando "npm run devtools --schema=logging" para adicionar a dependência e configurar o interceptor automaticamente.
-     * Mais informações em: https://confluence.bradesco.com.br:8443/pages/viewpage.action?pageId=807469806
-     */
-    provideHttpClient(withInterceptors([requestInterceptor])),
-    { provide: LOCALE_ID, useValue: 'pt' },
-    { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
-    { provide: ErrorHandler, useClass: AppErrorHandler },
-  ],
+    provideRouter(routes),
+    // Ordem de execução: correlationId (rastreamento) → auth (injeta token) →
+    // loading (mostra spinner) → retry (tenta novamente falhas transitórias
+    // de GET) → error (normaliza a falha final, usando o mesmo correlationId)
+    provideHttpClient(
+      withInterceptors([
+        correlationIdInterceptor,
+        authInterceptor,
+        loadingInterceptor,
+        retryInterceptor,
+        errorInterceptor,
+      ]),
+    )
+  ]
 };

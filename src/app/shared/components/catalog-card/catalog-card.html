@@ -1,0 +1,72 @@
+<div class="catalog-card">
+  <div class="card-header">
+    <h3>{{ card.title }}</h3>
+    <span class="flow-badge">ID: {{ card.id }}</span>
+  </div>
+
+  @if (card.environments?.length) {
+    <div class="form-group">
+      <div class="radio-group">
+        @for (env of card.environments; track env.value; let first = $first) {
+          <label class="radio-option">
+            <input
+              type="radio"
+              name="env-{{ card.id }}"
+              [value]="env.value"
+              [checked]="first"
+              [(ngModel)]="selectedEnvironment"
+            />
+            <span>{{ env.label }}</span>
+          </label>
+        }
+      </div>
+    </div>
+  }
+
+  @if (card.requiresAgencyInput) {
+    <div class="form-group">
+      <label class="agency-label" for="agency-{{ card.id }}">Agência</label>
+      <input
+        id="agency-{{ card.id }}"
+        type="text"
+        class="agency-input"
+        placeholder="Ex.: 3995"
+        [(ngModel)]="agency"
+        name="agency-{{ card.id }}"
+      />
+    </div>
+  }
+
+  <p class="card-description"><strong>Projeto:</strong> {{ card.project }}</p>
+
+  <div class="card-actions">
+    <button class="btn-primary" (click)="onGenerate()">Gerar Massa 🥐</button>
+
+    @if (card.journeyImage) {
+      <button
+        class="btn-journey"
+        type="button"
+        (click)="openJourneyModal()"
+        title="Ver a jornada completa deste workflow"
+      >
+        🗺️ Ver jornada
+      </button>
+    }
+  </div>
+</div>
+
+@if (showJourneyModal()) {
+  <div class="journey-modal-overlay" (click)="closeJourneyModal()">
+    <div class="journey-modal" (click)="$event.stopPropagation()">
+      <div class="journey-modal-header">
+        <h4>Jornada do workflow — {{ card.title }}</h4>
+        <button class="journey-modal-close" type="button" (click)="closeJourneyModal()" aria-label="Fechar">
+          ✕
+        </button>
+      </div>
+      <div class="journey-modal-body">
+        <img [src]="card.journeyImage" alt="Mapa da jornada / milestones do workflow" />
+      </div>
+    </div>
+  </div>
+}
