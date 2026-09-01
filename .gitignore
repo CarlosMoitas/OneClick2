@@ -49,11 +49,6 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-# Adicionado automaticamente - migração Nexus → JFrog
-yarn-debug.log*
-pnpm-debug.log*
-.pnpm-store/
-
 # Arquivos temporários e de sistema
 *.tmp
 *.temp
@@ -61,9 +56,3 @@ pnpm-debug.log*
 
 # graphify-axet
 .graphify/
-
-# Build artifacts adicionais
-dist/
-dist.zip
-*.zip
-.angular/
