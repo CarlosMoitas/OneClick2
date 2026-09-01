@@ -44,7 +44,21 @@ package-lock.json
 Thumbs.db
 mocks/_index.html
 
+<<<<<<< Updated upstream
 # Adicionado automaticamente - migração Nexus → JFrog
 yarn-debug.log*
 pnpm-debug.log*
 .pnpm-store/
+=======
+# Arquivos temporários e de sistema
+*.tmp
+*.temp
+*~
+
+# graphify-axet
+.graphify/
+
+node_modules/
+dist/
+.angular/
+>>>>>>> Stashed changes

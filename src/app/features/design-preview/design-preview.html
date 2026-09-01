@@ -1,0 +1,293 @@
+<!-- AMBIENT BACKGROUND (fixed, z-index: 0) — exatamente como o BEX real -->
+<div class="dp-ambient-bg" aria-hidden="true">
+  <div class="dp-amb dp-amb-r1"></div>
+  <div class="dp-amb dp-amb-c1"></div>
+  <div class="dp-amb dp-amb-r2"></div>
+  <div class="dp-amb dp-amb-c2"></div>
+  <div class="dp-amb dp-amb-r3"></div>
+  <div class="dp-amb dp-amb-c3"></div>
+</div>
+<div class="dp-ambient-grid" aria-hidden="true"></div>
+
+<div class="dp-page">
+
+  <!-- ── HEADER ──────────────────────────────────────────────────────────── -->
+  <header class="dp-header">
+    <div class="dp-header-inner">
+      <div class="dp-header-brand">
+        <span class="dp-logo-dot"></span>
+        <span class="dp-brand-name">BIA Tech</span>
+        <span class="bex-badge bex-badge--primary">Design System</span>
+      </div>
+      <div class="dp-header-actions">
+        <span class="dp-theme-label">{{ currentTheme }}</span>
+        <button class="dp-theme-toggle" (click)="toggleTheme()" type="button">
+          @if (isDark) { ☀️ Modo claro } @else { 🌙 Modo escuro }
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── HERO ────────────────────────────────────────────────────────────── -->
+  <section class="dp-hero">
+    <div class="dp-container">
+      <div class="dp-hero-badge">
+        <span class="dp-badge-dot"></span>
+        Portal TDM v1.0 · Aprovação Visual
+      </div>
+      <h1 class="dp-h1">BEX Design System para o <span class="dp-h1-accent">Portal TDM</span></h1>
+      <p class="dp-subtitle">
+        Identidade visual BIA Tech / BEX — componentes, tokens, temas dark/light e padrões de interação.
+      </p>
+      <div class="dp-hero-meta">
+        <code class="bex-mono">Inter · JetBrains Mono · #CC092F · Dark-first</code>
+      </div>
+    </div>
+  </section>
+
+  <div class="dp-container dp-sections">
+
+    <div class="dp-divider"></div>
+
+    <!-- ── PALETA ──────────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <div class="dp-sec-label">Fundação</div>
+      <h2 class="dp-h2">Paleta de Cores</h2>
+      <p class="dp-section-sub">Variáveis CSS responsivas ao tema ativo — dark/light</p>
+      <div class="dp-swatches">
+        @for (swatch of colorSwatches; track swatch.name) {
+          <div class="dp-swatch">
+            <div class="dp-swatch-color" [style.background]="'var(' + swatch.var + ')'"></div>
+            <div class="dp-swatch-info">
+              <span class="dp-swatch-name">{{ swatch.name }}</span>
+              <code class="dp-swatch-var">{{ swatch.var }}</code>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <div class="dp-divider"></div>
+
+    <!-- ── TIPOGRAFIA ──────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <div class="dp-sec-label">Tipografia</div>
+      <h2 class="dp-h2">Inter + JetBrains Mono</h2>
+      <div class="dp-type-grid">
+        <div class="dp-type-card">
+          <span class="bex-badge">Inter · Sans</span>
+          <p class="dp-type-h1">Heading 1 — 600</p>
+          <p class="dp-type-h2">Heading 2 — 600</p>
+          <p class="dp-type-h3">Heading 3 — 600</p>
+          <p class="dp-type-body">Body Regular — 400. Texto de conteúdo da plataforma BIA Tech. Fonte principal Inter com suavização ativada.</p>
+          <p class="dp-type-small">Small / Caption — 400. Texto auxiliar e metadados.</p>
+        </div>
+        <div class="dp-type-card">
+          <span class="bex-badge">JetBrains Mono · Técnico</span>
+          <code class="dp-type-mono-lg">cta-003 · workflow</code>
+          <code class="dp-type-mono">POST /api/requests/submit-and-download</code>
+          <code class="dp-type-mono">Bearer eyJhbGciOiJIUzI1...</code>
+          <code class="dp-type-mono dp-type-mono--dim">// IDs, hashes, payloads, badges</code>
+        </div>
+      </div>
+    </section>
+
+    <div class="dp-divider"></div>
+
+    <!-- ── BOTÕES ──────────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <div class="dp-sec-label">Componentes</div>
+      <h2 class="dp-h2">Botões</h2>
+      <div class="dp-row dp-row--wrap">
+        <button class="bex-btn bex-btn--primary">Primary Action</button>
+        <button class="bex-btn bex-btn--secondary">Secondary</button>
+        <button class="bex-btn bex-btn--ghost">Ghost</button>
+        <button class="bex-btn bex-btn--primary" disabled>Disabled</button>
+        <button class="bex-btn bex-btn--primary">🥐 Gerar Massa</button>
+        <button class="bex-btn bex-btn--secondary">🗺️ Ver Jornada</button>
+      </div>
+    </section>
+
+    <!-- ── BADGES ─────────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <h2 class="dp-h2">Badges & Tags</h2>
+      <div class="dp-row dp-row--wrap">
+        <span class="bex-badge">Default</span>
+        <span class="bex-badge bex-badge--primary">cta-003</span>
+        <span class="bex-badge bex-badge--success">✔ Concluído</span>
+        <span class="bex-badge bex-badge--error">✕ Erro</span>
+        <span class="bex-badge bex-badge--info">ℹ Running</span>
+        <code class="bex-badge">TU · DB204P</code>
+        <code class="bex-badge bex-badge--primary">v1.0.0</code>
+      </div>
+    </section>
+
+    <!-- ── INPUTS ─────────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <h2 class="dp-h2">Inputs & Formulários</h2>
+      <div class="dp-form-demo">
+        <div class="dp-field">
+          <label class="dp-label">Agência</label>
+          <input class="bex-input" type="text" placeholder="Ex.: 3995" value="3995" readonly />
+        </div>
+        <div class="dp-field">
+          <label class="dp-label">Ambiente</label>
+          <input class="bex-input" type="text" placeholder="TI / TU" value="TU" readonly />
+        </div>
+        <div class="dp-field">
+          <label class="dp-label">Buscar card</label>
+          <input class="bex-input" type="search" placeholder="Ex.: débito, contas, ID..." />
+        </div>
+      </div>
+    </section>
+
+    <div class="dp-divider"></div>
+
+    <!-- ── CARDS ──────────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <div class="dp-sec-label">Padrões</div>
+      <h2 class="dp-h2">Cards</h2>
+      <p class="dp-section-sub">hover: translateY(-3px) · border-color: rgba(204,9,47,0.4) · box-shadow: 0 12px 32px · radius: 12px</p>
+      <div class="dp-cards-grid">
+        <div class="dp-card-demo">
+          <div class="dp-card-header">
+            <span class="dp-card-title">Agendar Débito Automático</span>
+            <code class="bex-badge bex-badge--primary">cta-003</code>
+          </div>
+          <p class="dp-card-meta">Projeto: Abertura de Contas</p>
+          <div class="dp-card-field">
+            <label class="dp-label">Agência</label>
+            <input class="bex-input" type="text" value="3995" readonly />
+          </div>
+          <div class="dp-card-actions">
+            <button class="bex-btn bex-btn--primary">Gerar Massa 🥐</button>
+            <button class="bex-btn bex-btn--secondary">🗺️ Ver jornada</button>
+          </div>
+        </div>
+        <div class="dp-card-demo">
+          <div class="dp-card-header">
+            <span class="dp-card-title">Débito Automático</span>
+            <code class="bex-badge">cta-001</code>
+          </div>
+          <p class="dp-card-meta">Projeto: Contas</p>
+          <div class="dp-card-actions">
+            <button class="bex-btn bex-btn--primary">Gerar Massa 🥐</button>
+          </div>
+        </div>
+        <div class="dp-card-demo">
+          <div class="dp-card-header">
+            <span class="dp-card-title">Extrato de Contas Correntes</span>
+            <code class="bex-badge">cta-002</code>
+          </div>
+          <p class="dp-card-meta">Projeto: Contas</p>
+          <div class="dp-card-actions">
+            <button class="bex-btn bex-btn--primary">Gerar Massa 🥐</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="dp-divider"></div>
+
+    <!-- ── JOURNEY PROGRESS ───────────────────────────────────────────── -->
+    <section class="dp-section">
+      <div class="dp-sec-label">Real-time</div>
+      <h2 class="dp-h2">Journey Progress Tracker</h2>
+      <p class="dp-section-sub">Milestone visual da jornada — estados: pending · running (spinner + pulse) · success · error</p>
+      <div class="dp-journey-demo">
+        <div class="dp-journey-header">
+          <span class="dp-journey-title">🗺️ Jornada — Abertura de Contas</span>
+          <div class="dp-journey-overall">
+            <span class="dp-journey-pct">75%</span>
+            <div class="dp-journey-bar"><div class="dp-journey-fill" style="width: 75%"></div></div>
+          </div>
+        </div>
+        <div class="dp-journey-track">
+          <div class="dp-ms-wrap">
+            <div class="dp-ms dp-ms--success"><span class="dp-ms-icon">✔</span></div>
+            <span class="dp-ms-label dp-ms-label--success">Portal TDM</span>
+            <span class="dp-ms-dur">0.1s</span>
+          </div>
+          <div class="dp-ms-connector"><div class="dp-ms-conn-fill" style="width:100%"></div></div>
+          <div class="dp-ms-wrap">
+            <div class="dp-ms dp-ms--success"><span class="dp-ms-icon">✔</span></div>
+            <span class="dp-ms-label dp-ms-label--success">Contas Correntes PF</span>
+            <span class="dp-ms-dur">4.2s</span>
+          </div>
+          <div class="dp-ms-connector"><div class="dp-ms-conn-fill" style="width:100%"></div></div>
+          <div class="dp-ms-wrap">
+            <div class="dp-ms dp-ms--running">
+              <span class="dp-ms-spinner"></span>
+              <span class="dp-ms-pulse"></span>
+            </div>
+            <span class="dp-ms-label dp-ms-label--running">Habilitar Conta MA</span>
+            <div class="dp-ms-progress"><div class="dp-ms-progress-fill" style="width:60%"></div></div>
+          </div>
+          <div class="dp-ms-connector"><div class="dp-ms-conn-fill" style="width:0%"></div></div>
+          <div class="dp-ms-wrap">
+            <div class="dp-ms dp-ms--pending"><span class="dp-ms-icon dp-ms-icon--pending">💳</span></div>
+            <span class="dp-ms-label">Débito Automático</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="dp-divider"></div>
+
+    <!-- ── BACKGROUND ─────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <div class="dp-sec-label">Background</div>
+      <h2 class="dp-h2">Ambient Glow + Grid</h2>
+      <p class="dp-section-sub">6 blobs radiais vermelhos · grid 48×48px · somente CSS · light mode com opacity 0.15</p>
+      <div class="dp-bg-demo">
+        <div class="dp-bg-inner">
+          <span class="dp-bg-label">radial-gradient · rgba(204,9,47,0.48) · grid 48px</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="dp-divider"></div>
+
+    <!-- ── STATUS ─────────────────────────────────────────────────────── -->
+    <section class="dp-section">
+      <div class="dp-sec-label">Feedback</div>
+      <h2 class="dp-h2">Estados de Status</h2>
+      <div class="dp-status-grid">
+        <div class="dp-status-item dp-status-item--success">
+          <span class="dp-status-dot"></span>
+          <div>
+            <p class="dp-status-title">Sucesso</p>
+            <p class="dp-status-msg">Workflow "Abertura de Contas" concluído.</p>
+          </div>
+        </div>
+        <div class="dp-status-item dp-status-item--error">
+          <span class="dp-status-dot"></span>
+          <div>
+            <p class="dp-status-title">Erro</p>
+            <p class="dp-status-msg">Conta não extraída do artefato .zip.</p>
+          </div>
+        </div>
+        <div class="dp-status-item dp-status-item--warning">
+          <span class="dp-status-dot"></span>
+          <div>
+            <p class="dp-status-title">Alerta</p>
+            <p class="dp-status-msg">Timeout na chamada ao Gateway TDM.</p>
+          </div>
+        </div>
+        <div class="dp-status-item dp-status-item--info">
+          <span class="dp-status-dot"></span>
+          <div>
+            <p class="dp-status-title">Informação</p>
+            <p class="dp-status-msg">[2/3] Habilitar Conta MA: enviando request...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+    <footer class="dp-footer">
+      <code class="bex-mono">BIA Tech · BEX Design System · Portal TDM · {{ currentTheme }} theme · grid 48px · #CC092F</code>
+    </footer>
+
+  </div>
+</div>
