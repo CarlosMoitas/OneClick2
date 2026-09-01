@@ -1,7 +1,8 @@
 {
-  "/dsysliquid/": {
-    "target": "https://static.bradesco.com.br",
-    "logLevel": "debug",
+  "$schema": "http://json.schemastore.org/proxy",
+  "/gw": {
+    "target": "http://localhost:3000",
+    "pathRewrite": { "^/gw": "" },
     "secure": false,
     "changeOrigin": true
   }

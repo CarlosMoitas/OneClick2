@@ -1,0 +1,54 @@
+/**
+ * Design Tokens — BEX / BIA Tech Design System
+ *
+ * Fonte da verdade para todas as variáveis CSS da aplicação.
+ * Importado por theme-dark.scss e theme-light.scss.
+ * NÃO usar diretamente — sempre via var(--bex-*).
+ */
+
+// ── Typography ────────────────────────────────────────────────────────────────
+$font-sans:  'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+$font-mono:  'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+$fw-regular: 400;
+$fw-medium:  500;
+$fw-semibold: 600;
+$fw-bold:    700;
+
+// ── Color: Brand ──────────────────────────────────────────────────────────────
+$color-primary:       #CC092F;
+$color-primary-hover: #A00725;
+$color-primary-glow:  rgba(204, 9, 47, 0.30);
+$color-primary-subtle: rgba(204, 9, 47, 0.10);
+
+// ── Spacing scale ─────────────────────────────────────────────────────────────
+$space-1:  4px;
+$space-2:  8px;
+$space-3:  12px;
+$space-4:  16px;
+$space-5:  20px;
+$space-6:  24px;
+$space-8:  32px;
+$space-10: 40px;
+$space-12: 48px;
+$space-16: 64px;
+
+// ── Radius ────────────────────────────────────────────────────────────────────
+$radius-sm:  6px;
+$radius-md:  8px;
+$radius-lg:  12px;
+$radius-xl:  16px;
+$radius-full: 9999px;
+
+// ── Transitions ───────────────────────────────────────────────────────────────
+$transition-fast:   150ms ease;
+$transition-normal: 200ms ease;
+$transition-slow:   300ms ease;
+
+// ── Shadows ───────────────────────────────────────────────────────────────────
+$shadow-card:      0 4px 16px rgba(0, 0, 0, 0.12);
+$shadow-card-hover: 0 12px 32px rgba(0, 0, 0, 0.20);
+$shadow-elevated:  0 8px 24px rgba(0, 0, 0, 0.16);
+
+// ── Grid background ───────────────────────────────────────────────────────────
+$grid-size: 48px;

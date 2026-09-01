@@ -1,0 +1,12 @@
+:root{
+  --bg-base:#0B0F14; --bg-surface:#111827; --bg-overlay:rgba(8,12,20,.72);
+  --text-primary:#E8EEF7; --text-secondary:#A8B3C7; --text-muted:#7E8AA3;
+  --brand:#CC092F; --brand-hover:#E20D36;
+  --border-default:rgba(255,255,255,.12); --border-strong:rgba(255,255,255,.2);
+  --topbar-h:64px; --sidebar-w:280px;
+}
+body[data-theme="light"]{
+  --bg-base:#F5F7FB; --bg-surface:#FFFFFF;
+  --text-primary:#0F172A; --text-secondary:#334155; --text-muted:#64748B;
+  --border-default:rgba(2,6,23,.12); --border-strong:rgba(2,6,23,.22);
+}

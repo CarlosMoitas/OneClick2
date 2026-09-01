@@ -1,0 +1,286 @@
+/**
+ * POC — Journey Progress Styles
+ * Segue o padrão visual do portal (variáveis CSS definidas em styles.scss):
+ *   --bradesco-red, --bradesco-text, --bradesco-muted, --border-color, --card-bg
+ */
+
+// ── Variáveis locais (fallbacks caso as globais não estejam disponíveis) ──
+$jp-success:  #16a34a;
+$jp-error:    #dc2626;
+$jp-running:  #2563eb;
+$jp-pending:  #94a3b8;
+$jp-bg:       #ffffff;
+$jp-border:   #e2e8f0;
+$jp-text:     #1e293b;
+$jp-muted:    #64748b;
+$jp-node-size: 42px;
+$jp-connector-h: 4px;
+$jp-transition: 0.4s ease;
+
+// ── Container principal ───────────────────────────────────────────────────
+.journey-progress-poc {
+  background-color: var(--card-bg, $jp-bg);
+  border: 1px solid var(--border-color, $jp-border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+// ── Cabeçalho ─────────────────────────────────────────────────────────────
+.jp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.jp-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bradesco-text, $jp-text);
+  letter-spacing: 0.01em;
+}
+
+.jp-overall {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jp-overall-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bradesco-muted, $jp-muted);
+  min-width: 36px;
+  text-align: right;
+}
+
+.jp-overall-bar {
+  width: 120px;
+  height: 6px;
+  background: var(--border-color, $jp-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.jp-overall-fill {
+  height: 100%;
+  background: var(--bradesco-red, #cc0000);
+  border-radius: 3px;
+  transition: width $jp-transition;
+}
+
+// ── Track (linha do tempo) ────────────────────────────────────────────────
+.jp-track {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+}
+
+// ── Conector entre nós ────────────────────────────────────────────────────
+.jp-connector {
+  flex: 1;
+  height: $jp-connector-h;
+  background: var(--border-color, $jp-border);
+  margin-top: ($jp-node-size * 0.5) - ($jp-connector-h * 0.5);
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.jp-connector-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: $jp-success;
+  height: 100%;
+  transition: width $jp-transition;
+}
+
+.jp-connector--done .jp-connector-fill {
+  width: 100% !important;
+}
+
+// ── Wrapper de cada nó ────────────────────────────────────────────────────
+.jp-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  min-width: $jp-node-size;
+  gap: 6px;
+}
+
+// ── Nó (círculo) ──────────────────────────────────────────────────────────
+.jp-node {
+  width: $jp-node-size;
+  height: $jp-node-size;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid $jp-pending;
+  background: $jp-bg;
+  position: relative;
+  cursor: default;
+  transition:
+    border-color $jp-transition,
+    background $jp-transition,
+    box-shadow $jp-transition;
+  z-index: 1;
+
+  // ── Pending ──
+  &--pending {
+    border-color: $jp-pending;
+    background: #f8fafc;
+    color: $jp-pending;
+  }
+
+  // ── Running ──
+  &--running {
+    border-color: $jp-running;
+    background: lighten($jp-running, 44%);
+    box-shadow: 0 0 0 0 rgba($jp-running, 0.4);
+  }
+
+  // ── Success ──
+  &--success {
+    border-color: $jp-success;
+    background: $jp-success;
+    color: #fff;
+  }
+
+  // ── Error ──
+  &--error {
+    border-color: $jp-error;
+    background: $jp-error;
+    color: #fff;
+    cursor: help;
+  }
+}
+
+// ── Ícone dentro do nó ────────────────────────────────────────────────────
+.jp-icon {
+  font-size: 16px;
+  line-height: 1;
+  font-style: normal;
+}
+
+.jp-icon--pending {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+// ── Spinner (running) ─────────────────────────────────────────────────────
+.jp-spinner {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba($jp-running, 0.25);
+  border-top-color: $jp-running;
+  border-radius: 50%;
+  animation: jp-spin 0.8s linear infinite;
+}
+
+@keyframes jp-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Pulse ring (running) ──────────────────────────────────────────────────
+.jp-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba($jp-running, 0.4);
+  animation: jp-pulse 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes jp-pulse {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  70%  { transform: scale(1.3); opacity: 0;   }
+  100% { transform: scale(1.3); opacity: 0;   }
+}
+
+// ── Label ─────────────────────────────────────────────────────────────────
+.jp-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  max-width: 72px;
+  line-height: 1.3;
+  color: var(--bradesco-muted, $jp-muted);
+  transition: color $jp-transition;
+
+  &--running  { color: $jp-running; }
+  &--success  { color: $jp-success; }
+  &--error    { color: $jp-error;   }
+}
+
+// ── Duração ───────────────────────────────────────────────────────────────
+.jp-duration {
+  font-size: 10px;
+  color: var(--bradesco-muted, $jp-muted);
+  opacity: 0.75;
+}
+
+// ── Barra de progresso por step ───────────────────────────────────────────
+.jp-step-progress {
+  width: 64px;
+  height: 3px;
+  background: var(--border-color, $jp-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.jp-step-progress-fill {
+  height: 100%;
+  background: $jp-running;
+  border-radius: 2px;
+  transition: width 0.3s linear;
+}
+
+// ── Tooltip de erro ───────────────────────────────────────────────────────
+.jp-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: $jp-text;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  max-width: 200px;
+  white-space: normal;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: $jp-text;
+  }
+}
+
+// ── Reduced motion ────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .jp-spinner,
+  .jp-pulse,
+  .jp-overall-fill,
+  .jp-connector-fill,
+  .jp-step-progress-fill {
+    animation: none;
+    transition: none;
+  }
+}

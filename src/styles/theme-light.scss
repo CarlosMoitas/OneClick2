@@ -1,0 +1,63 @@
+/**
+ * Theme Light — BEX / BIA Tech Design System
+ *
+ * Aplicado quando a classe `dark-theme` NÃO estiver no <html>.
+ * O ThemeService já gerencia a alternância.
+ */
+
+html:not(.dark-theme) {
+  // ── Brand ──────────────────────────────────────────────────────────────────
+  --bex-primary:        #CC092F;
+  --bex-primary-hover:  #A00725;
+  --bex-primary-glow:   rgba(204, 9, 47, 0.12);
+  --bex-primary-subtle: rgba(204, 9, 47, 0.06);
+
+  // ── Background layers ──────────────────────────────────────────────────────
+  --bex-bg:               #F8F9FB;
+  --bex-surface:          #FFFFFF;
+  --bex-surface-elevated: #FAFAFA;
+
+  // ── Borders ────────────────────────────────────────────────────────────────
+  --bex-border:         rgba(0, 0, 0, 0.08);
+  --bex-border-strong:  rgba(0, 0, 0, 0.14);
+
+  // ── Text ───────────────────────────────────────────────────────────────────
+  --bex-text-primary:   #111111;
+  --bex-text-secondary: #555555;
+  --bex-text-tertiary:  #777777;
+  --bex-text-disabled:  #AAAAAA;
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  --bex-success:        #16a34a;
+  --bex-success-subtle: rgba(22, 163, 74, 0.08);
+  --bex-error:          #dc2626;
+  --bex-error-subtle:   rgba(220, 38, 38, 0.08);
+  --bex-warning:        #d97706;
+  --bex-warning-subtle: rgba(217, 119, 6, 0.08);
+  --bex-info:           #2563eb;
+  --bex-info-subtle:    rgba(37, 99, 235, 0.08);
+
+  // ── Header glassmorphism ───────────────────────────────────────────────────
+  --bex-header-bg:      rgba(255, 255, 255, 0.80);
+  --bex-header-border:  rgba(0, 0, 0, 0.08);
+
+  // ── Grid background ────────────────────────────────────────────────────────
+  --bex-grid-color:     rgba(0, 0, 0, 0.04);
+
+  // ── Ambient glow intensidade light (6 blobs · opacity ~15%) ───────────────
+  --bex-glow-strong:    rgba(204, 9, 47, 0.10);
+
+  // ── Shadows ────────────────────────────────────────────────────────────────
+  --bex-shadow-card:      0 4px 16px rgba(0, 0, 0, 0.06);
+  --bex-shadow-elevated:  0 8px 24px rgba(0, 0, 0, 0.10);
+  --bex-shadow-hover:     0 12px 32px rgba(0, 0, 0, 0.14);
+
+  // ── Backwards compat ───────────────────────────────────────────────────────
+  --bradesco-red:       var(--bex-primary);
+  --bradesco-dark-red:  var(--bex-primary-hover);
+  --bradesco-bg:        var(--bex-bg);
+  --bradesco-text:      var(--bex-text-primary);
+  --bradesco-muted:     var(--bex-text-secondary);
+  --card-bg:            var(--bex-surface);
+  --border-color:       var(--bex-border);
+}

@@ -1,26 +1,2 @@
-<!-- Toolbar -->
-@if (!LiquidCorp) {
-<div class="toolbar-warn" role="banner" aria-label="Aviso de LiquidCorp">
-  <span>LiquidCorp não encontrado! Para instalar utilize o devtools</span>
-  <p style="font-size:11px">Obs: Apagar esse seletor do codigo caso seu projeto não use o Liquid</p>
-</div>
-}
-
-<main [class]="'brad-theme-' + segmento + ' content'">
-  @if (loader()) {
-  <div class="brad-flex">
-    <div class="brad-loader spinner">
-      <em></em>
-      <em></em>
-      <em></em>
-      <em></em>
-      <em></em>
-      <em></em>
-      <em></em>
-      <em></em>
-    </div>
-  </div>
-  } @else {
-  <router-outlet />
-  }
-</main>
+<app-loading-overlay></app-loading-overlay>
+<router-outlet />

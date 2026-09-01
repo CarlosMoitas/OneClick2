@@ -6,10 +6,16 @@
 /out-tsc
 /bazel-out
 
-# Node
-/node_modules
+# Node (qualquer profundidade — ex.: /node_modules e /server/node_modules)
+node_modules/
 npm-debug.log
 yarn-error.log
+*.log
+
+# Servidor próprio (server/) — segredos e artefatos gerados em runtime
+/server/.env
+/server/dist
+/server/storage/
 
 # IDEs and editors
 .idea/
@@ -26,6 +32,7 @@ yarn-error.log
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/mcp.json
 .history/*
 
 # Miscellaneous
@@ -37,19 +44,16 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
-package-lock.json
 
 # System files
 .DS_Store
 Thumbs.db
-mocks/_index.html
 
-<<<<<<< Updated upstream
 # Adicionado automaticamente - migração Nexus → JFrog
 yarn-debug.log*
 pnpm-debug.log*
 .pnpm-store/
-=======
+
 # Arquivos temporários e de sistema
 *.tmp
 *.temp
@@ -58,7 +62,8 @@ pnpm-debug.log*
 # graphify-axet
 .graphify/
 
-node_modules/
+# Build artifacts adicionais
 dist/
+dist.zip
+*.zip
 .angular/
->>>>>>> Stashed changes

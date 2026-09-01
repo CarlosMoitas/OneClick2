@@ -1,26 +1,13 @@
 <!doctype html>
-<html lang="pt-BR">
-
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Bradesco</title>
-  <base href="/" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="app-version" content="[[VERSION]]" />
-  <!-- load do app config -->
-  <script defer src="assets/config/app-config.js?[[VERSION]]" type="application/javascript"></script>
+  <meta charset="utf-8">
+  <title>One Click</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="oneclickfav.ico?v=2">
 </head>
-
 <body>
   <app-root></app-root>
-  <script>
-    (function () {
-      window.getVoltar = function () {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        window.dispatchEvent(new Event('voltar'));
-      };
-    })();
-  </script>
 </body>
-
 </html>

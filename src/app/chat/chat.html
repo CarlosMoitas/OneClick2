@@ -1,0 +1,77 @@
+<div class="chat-page bradesco-theme">
+  <div class="toast" [class.show]="!!toast()">{{ toast() }}</div>
+
+  <header class="topbar bex-header">
+    <div class="topbar-left">
+      <button class="icon-btn only-mobile" (click)="sidebarOpen.set(true)" aria-label="Abrir menu">☰</button>
+      <div class="wordmark">
+        <span class="bia">BIA</span><span class="pipe">|</span><span class="tech">Tech</span>
+      </div>
+      <span class="nav-badge">Chat</span>
+    </div>
+
+    <div class="topbar-right">
+      <button class="icon-btn" (click)="toggleTheme()" aria-label="Alternar tema">
+        {{ theme() === 'dark' ? '☾' : '☀' }}
+      </button>
+    </div>
+  </header>
+
+  <main class="app" [class.sidebar-open]="sidebarOpen()">
+    <aside class="sidebar bex-card">
+      <div class="sidebar-top">
+        <button class="new-chat-btn" (click)="newConversation()"><span>Nova conversa</span><span>＋</span></button>
+      </div>
+
+      <nav class="conv-list" aria-label="Conversas">
+        @for (c of conversations(); track trackByConv($index, c)) {
+          <button class="conv-item" [class.active]="c.id === state().activeId" (click)="setActive(c.id)">
+            {{ c.title }}
+          </button>
+        }
+      </nav>
+
+      <div class="sb-footer">
+        <button class="sidebar-toggle" (click)="closeMobileSidebar()">Fechar</button>
+      </div>
+    </aside>
+
+    <button class="sidebar-overlay" (click)="closeMobileSidebar()" aria-label="Fechar menu"></button>
+
+    <section class="chat-area">
+      <div class="welcome-greeting" *ngIf="!(active()?.messages?.length)">
+        <h1 class="welcome-title">Como posso te ajudar?</h1>
+      </div>
+
+      <div class="messages">
+        @if (active(); as conv) {
+          @for (m of conv.messages; track $index) {
+            <article class="msg" [class.msg-user]="m.role === 'user'" [class.msg-ai]="m.role === 'ai'">
+              <div>
+                <div class="bubble">{{ m.text }}</div>
+                <div class="msg-toolbar" *ngIf="m.role === 'ai'">
+                  <button class="msg-tool-btn" (click)="copy(m.text)">Copiar</button>
+                </div>
+              </div>
+            </article>
+          }
+        }
+      </div>
+
+      <footer class="input-area">
+        <div class="input-box bex-card">
+          <textarea
+            rows="1"
+            [(ngModel)]="input"
+            (keydown)="onKeydown($event)"
+            (input)="autoGrow($event)"
+            placeholder="Faça uma pergunta..."></textarea>
+
+          <div class="input-bottom">
+            <button class="send-btn" (click)="send()" aria-label="Enviar">↑</button>
+          </div>
+        </div>
+      </footer>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,9 @@
+@if (loadingService.isLoading()) {
+  <div class="loading-overlay" role="status" aria-live="polite">
+    @if (!journeyProgressService.isActive()) {
+      <!-- Spinner padrão — exibido em todos os fluxos exceto quando o Journey Progress já mostra o progresso -->
+      <div class="loading-spinner"></div>
+    }
+    <span class="sr-only">Carregando...</span>
+  </div>
+}

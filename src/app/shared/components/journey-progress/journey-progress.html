@@ -1,0 +1,76 @@
+@if (visible && isActive) {
+  <section class="journey-progress-poc" aria-label="Progresso da jornada Abertura de Contas">
+
+    <!-- Cabeçalho -->
+    <div class="jp-header">
+      <span class="jp-title">🗺️ Jornada — Abertura de Contas</span>
+      <div class="jp-overall">
+        <span class="jp-overall-label">{{ overallProgress }}%</span>
+        <div class="jp-overall-bar">
+          <div class="jp-overall-fill" [style.width.%]="overallProgress"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha do tempo horizontal -->
+    <div class="jp-track">
+      @for (step of steps; track trackByStep($index, step); let last = $last) {
+
+        <!-- Nó / Milestone -->
+        <div class="jp-node-wrapper">
+          <div
+            class="jp-node"
+            [class]="'jp-node--' + step.status"
+            (mouseenter)="step.status === 'error' ? showTooltip(step.id) : null"
+            (mouseleave)="hideTooltip()"
+            [attr.aria-label]="step.name + ': ' + step.status"
+          >
+            @if (step.status === 'running') {
+              <!-- Estado running: spinner animado + pulse ring -->
+              <span class="jp-spinner" aria-hidden="true"></span>
+            } @else if (step.status === 'success') {
+              <span class="jp-icon" aria-hidden="true">✔</span>
+            } @else if (step.status === 'error') {
+              <span class="jp-icon" aria-hidden="true">✕</span>
+            } @else {
+              <span class="jp-icon jp-icon--pending" aria-hidden="true">{{ step.icon ?? '○' }}</span>
+            }
+
+            <!-- Pulse ring para "running" -->
+            @if (step.status === 'running') {
+              <span class="jp-pulse" aria-hidden="true"></span>
+            }
+          </div>
+
+          <!-- Label abaixo do nó -->
+          <span class="jp-label" [class]="'jp-label--' + step.status">{{ step.name }}</span>
+
+          <!-- Duração (quando concluído ou com erro) -->
+          @if (step.duration) {
+            <span class="jp-duration">{{ formatDuration(step.duration) }}</span>
+          }
+
+          <!-- Tooltip de erro -->
+          @if (step.status === 'error' && activeTooltip() === step.id && step.errorMessage) {
+            <div class="jp-tooltip" role="tooltip">{{ step.errorMessage }}</div>
+          }
+
+          <!-- Barra de progresso interna (somente running) -->
+          @if (step.status === 'running' && (step.progress ?? 0) > 0) {
+            <div class="jp-step-progress">
+              <div class="jp-step-progress-fill" [style.width.%]="step.progress"></div>
+            </div>
+          }
+        </div>
+
+        <!-- Conector entre nós (não renderizar após o último) -->
+        @if (!last) {
+          <div class="jp-connector" [class.jp-connector--done]="step.status === 'success'">
+            <div class="jp-connector-fill" [style.width.%]="step.status === 'success' ? 100 : 0"></div>
+          </div>
+        }
+      }
+    </div>
+
+  </section>
+}

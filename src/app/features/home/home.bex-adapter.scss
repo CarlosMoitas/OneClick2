@@ -1,0 +1,84 @@
+/* Adapter visual BEX/Bradesco sem alterar o CSS original */
+
+.content-container {
+  max-width: 1280px;
+  margin: 24px auto;
+  padding: 0 24px;
+  gap: 20px;
+}
+
+/* Superfícies */
+.filter-card,
+.workflow-log-card {
+  background-color: var(--bex-surface) !important;
+  border: 1px solid var(--bex-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--bex-shadow-card) !important;
+}
+
+/* Labels e textos */
+.input-group label,
+.workflow-log-title,
+.empty-state {
+  color: var(--bex-text-secondary) !important;
+  letter-spacing: .04em;
+}
+
+/* Campos */
+.input-group select,
+.catalog-search-control input {
+  background-color: var(--bex-surface-elevated) !important;
+  color: var(--bex-text-primary) !important;
+  border: 1px solid var(--bex-border) !important;
+  border-radius: 8px !important;
+  min-height: 42px;
+}
+
+.input-group select:focus,
+.catalog-search-control input:focus {
+  border-color: var(--bex-primary) !important;
+  box-shadow: 0 0 0 3px var(--bex-primary-subtle);
+}
+
+.catalog-search-icon {
+  stroke: var(--bex-text-tertiary) !important;
+}
+.catalog-search-control input:focus + .catalog-search-icon {
+  stroke: var(--bex-primary) !important;
+}
+
+/* Grid/cards — espaçamento apenas; hover e radius são gerenciados
+   pelo próprio catalog-card.scss para evitar duplo transform. */
+.catalog-grid {
+  gap: 16px;
+}
+
+/* Log */
+.workflow-log-list {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--bex-text-primary);
+}
+
+.workflow-log-time {
+  color: var(--bex-text-tertiary) !important;
+}
+
+.workflow-log-message {
+  color: var(--bex-text-primary) !important;
+}
+
+/* Cores semânticas alinhadas ao tema */
+.workflow-log-item.level-success .workflow-log-message {
+  color: var(--bex-success) !important;
+}
+
+.workflow-log-item.level-error .workflow-log-message,
+.error-banner {
+  color: var(--bex-error) !important;
+}
+
+.error-banner {
+  background-color: var(--bex-error-subtle) !important;
+  border: 1px solid color-mix(in srgb, var(--bex-error) 35%, transparent) !important;
+  border-radius: 10px !important;
+}

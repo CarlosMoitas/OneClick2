@@ -1,18 +1,12 @@
-import { HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
-import { catchError, Observable, throwError } from 'rxjs';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
+import { AuthService } from '../services/auth.service';
+import { LoggerService } from '../logging/logger.service';
+import { ApiError } from '../models/api-error.model';
+import { CORRELATION_ID_CONTEXT } from './correlation-id.interceptor';
 
-<<<<<<< Updated upstream
-export function errorInterceptor(
-    req: HttpRequest<unknown>,
-    next: HttpHandlerFn
-): Observable<HttpEvent<unknown>> {
-    return next(req).pipe(
-        catchError((error) => {
-            // Tratamento de erro HTTP, se precisar. Caso não tenha, pode remover o interceptor por completo.
-            return throwError(() => error);
-        })
-    );
-=======
 /**
  * Intercepta todas as respostas HTTP com erro (401, 403, 404, 500, erros de
  * rede, etc.) e as normaliza no contrato único `ApiError`
@@ -228,5 +222,4 @@ function extractGatewayMessage(error: HttpErrorResponse): string | undefined {
     return (body as { message?: string }).message;
   }
   return undefined;
->>>>>>> Stashed changes
 }
