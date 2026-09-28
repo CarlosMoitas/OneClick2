@@ -23,6 +23,25 @@ export const ABERTURA_CONTAS_STEPS: Readonly<Omit<JourneyStep, 'status'>[]> = [
   { id: 3, name: 'Débito Automático', icon: '💳' },
 ];
 
+/**
+ * Steps do workflow "Massa de Dados PJ" (cta-005).
+ * Etapa 1: Cadastro de Clientes - PSDC
+ * Etapa 2: Contas Correntes - PJ
+ * Etapa 3: Contas Correntes - PF
+ * Etapa 4: Habilitar Conta no MA
+ * Etapa 5: Incluir Procurador PJ
+ * Etapa 6: BROB - Geração de Contrato
+ */
+export const MASSA_DADOS_PJ_STEPS: Readonly<Omit<JourneyStep, 'status'>[]> = [
+  { id: 0, name: 'Portal TDM', icon: '🚀' },
+  { id: 1, name: 'Cadastro de Clientes PSDC', icon: '🏢' },
+  { id: 2, name: 'Contas Correntes PJ', icon: '🏦' },
+  { id: 3, name: 'Contas Correntes PF', icon: '👤' },
+  { id: 4, name: 'Habilitar Conta no MA', icon: '⚙️' },
+  { id: 5, name: 'Incluir Procurador PJ', icon: '📝' },
+  { id: 6, name: 'BROB - Geração de Contrato', icon: '📄' },
+];
+
 @Injectable({ providedIn: 'root' })
 export class JourneyProgressService {
   private readonly _steps = signal<JourneyStep[]>([]);

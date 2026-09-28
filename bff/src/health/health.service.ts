@@ -40,9 +40,43 @@ async function checkHealth(): Promise<HealthCheckResult> {
     };
   }
 
-  // Camada 3 — Authentication: tenta obter (ou reaproveitar do cache) um
-  // token real do TDM. Só falha se as credenciais estiverem ausentes,
-  // incorretas, ou se o TDM estiver inacessível/fora do ar.
+  // Camada 3 — Authentication.
+  //
+  // O Portal suporta dois modos de autenticação com o TDM:
+  //
+  //   a) Sistêmica: TDM_USERNAME + TDM_PASSWORD (ou TDM_BEARER_TOKEN)
+  //      configurados neste servidor. O `tdmClient.tdmLogin()` obtém um
+  //      token técnico compartilhado e o usa em todas as chamadas.
+  //
+  //   b) Delegada por sessão: credenciais NÃO configuradas neste servidor.
+  //      Cada usuário faz login no Portal com suas próprias credenciais TDM
+  //      via `POST /auth/login` → `verifyTdmCredentials()`, e o token
+  //      pessoal é armazenado no JWT de sessão Angular. Todas as chamadas
+  //      de execução usam `tdmRequestAs(config, userToken)` — o servidor
+  //      nunca precisa de um token sistêmico próprio.
+  //
+  // IMPORTANTE: ausência de credenciais sistêmicas NÃO é uma falha — é
+  // uma configuração intencional e válida (modo delegado). Só reportar
+  // `authentication: DOWN` quando credenciais FORAM configuradas mas
+  // falharam ao testar, ou quando o TDM está literalmente inacessível.
+  const hasSystemAuth =
+    Boolean(env.tdm.bearerToken) ||
+    (Boolean(env.tdm.username) && Boolean(env.tdm.password));
+
+  if (!hasSystemAuth) {
+    // Modo delegado: autenticação por sessão do usuário. O Portal está
+    // pronto para executar cards assim que o usuário fizer login.
+    return {
+      gateway,
+      tdm: 'UP',
+      authentication: 'UP',
+      readyForExecution: true,
+      message: 'Portal pronto para executar requests (autenticação por sessão de usuário).',
+      timestamp,
+    };
+  }
+
+  // Modo sistêmico: testa o token técnico do servidor (cache de 10 min).
   try {
     await tdmClient.tdmLogin();
 

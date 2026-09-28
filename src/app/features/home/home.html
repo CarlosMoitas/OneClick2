@@ -13,24 +13,52 @@
     }
 
     <!-- WORKFLOW LOG — Debug de jornadas encadeadas
-         Oculto temporariamente. Para reabilitar basta remover os comentários
-         ao redor do bloco @if abaixo.
-         Útil para debug ao desenvolver novas jornadas de cards encadeados.
-
-    @if (workflowLog().length) {
+         Controlado pela feature flag SHOW_WORKFLOW_LOG (home.ts).
+         Para ocultar novamente no futuro: basta alterar SHOW_WORKFLOW_LOG
+         para `false` em home.ts — não é necessário editar este template. -->
+    @if (showWorkflowLog() && showJourneyProgress()) {
       <section class="workflow-log-card" aria-live="polite">
         <h3 class="workflow-log-title">Acompanhamento do workflow</h3>
-        <ul class="workflow-log-list">
-          @for (entry of workflowLog(); track $index) {
-            <li class="workflow-log-item" [class]="'level-' + entry.level">
-              <span class="workflow-log-time">{{ entry.timestamp }}</span>
-              <span class="workflow-log-message">{{ entry.message }}</span>
-            </li>
-          }
-        </ul>
+
+        <!-- Resumo destacado da conta criada — permanece visível mesmo
+             após o workflow concluir, até que um novo workflow seja
+             iniciado (ver HomeFacade.lastCreatedAccount). -->
+        @if (lastCreatedAccount()) {
+          <div class="created-account-summary">
+            <span class="created-account-label">{{ lastCreatedAccount()!.workflowLabel }} — Conta criada:</span>
+            <span class="created-account-field">
+              <strong>Agência:</strong> {{ lastCreatedAccount()!.agencia }}
+            </span>
+            <span class="created-account-field">
+              <strong>Conta:</strong> {{ lastCreatedAccount()!.conta }}
+            </span>
+            @if (lastCreatedAccount()!.digito) {
+              <span class="created-account-field">
+                <strong>Dígito:</strong> {{ lastCreatedAccount()!.digito }}
+              </span>
+            }
+            @if (lastCreatedAccount()!.cpfCliente) {
+              <span class="created-account-field">
+                <strong>CPF Cliente:</strong> {{ lastCreatedAccount()!.cpfCliente }}
+              </span>
+            }
+          </div>
+        }
+
+        @if (workflowLog().length) {
+          <ul class="workflow-log-list">
+            @for (entry of workflowLog(); track $index) {
+              <li class="workflow-log-item" [class]="'level-' + entry.level">
+                <span class="workflow-log-time">{{ entry.timestamp }}</span>
+                <span class="workflow-log-message">{{ entry.message }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="workflow-log-empty">Aguardando início do workflow...</p>
+        }
       </section>
     }
-    -->
 
     <section class="filter-card">
       <div class="filter-grid">

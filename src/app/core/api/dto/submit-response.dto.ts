@@ -11,6 +11,15 @@ export interface ExtractedContaInfoDto {
   found: boolean;
   agencia?: string;
   conta?: string;
+  /** Dígito verificador da conta — presente em workflows PJ (cta-005). */
+  digito?: string;
+  /** CPF do cliente montado a partir de CCGC_CPF(9) + CCTRL_CPF_CGC(2). */
+  cpfCliente?: string;
+  /**
+   * `true` quando o artefato contém SQLCODE=-904 — tabela DB2 indisponível.
+   * Permite ao frontend exibir diagnóstico específico em vez da mensagem genérica.
+   */
+  db2TableUnavailable?: boolean;
   reason?: string;
 }
 
@@ -25,10 +34,9 @@ export interface SubmitResponseDto {
   artifactLocation?: string;
   message?: string;
   /**
-   * Preenchido apenas quando o artefato retornado permite extrair a conta
-   * corrente criada (rotina "Contas Correntes - PF" / Agendar Débito
-   * Automático). Usado para encadear automaticamente o card
-   * "Habilitar Conta MA".
+ * Preenchido quando o artefato retornado permite extrair dados da conta
+ * corrente criada e dados complementares do cliente (ex.: cpfCliente),
+ * usados para encadear automaticamente próximos cards do workflow.
    */
   extractedContaInfo?: ExtractedContaInfoDto;
 }

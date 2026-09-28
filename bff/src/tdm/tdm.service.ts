@@ -43,6 +43,23 @@ function pickDownloadableChildJob(job: TdmJob): TdmJob | null {
 }
 
 /**
+ * Igual a `pickDownloadableChildJob`, mas aceita filhos em qualquer status
+ * terminal (inclusive "failed") que possuam `artifactLocation`.
+ * Usado como fallback para inspecionar o artefato de jobs que falharam.
+ */
+function pickAnyChildJobWithArtifact(job: TdmJob): TdmJob | null {
+  const children = Array.isArray(job.jobs) ? job.jobs : [];
+  return (
+    children.find(
+      (child) =>
+        String(child.type ?? '').toUpperCase() === 'PUBLISH' && child.artifactLocation,
+    ) ??
+    children.find((child) => child.artifactLocation) ??
+    null
+  );
+}
+
+/**
  * Seleciona automaticamente a função de request correta:
  * - Se `userToken` for fornecido → usa `tdmRequestAs` (token do usuário
  *   logado), com fallback automático para o token sistêmico em caso de
@@ -247,9 +264,60 @@ async function submitAndDownload(
   // auditoria e para reproduzir a submissão futuramente.
   savePayload(requestedJobId, payload);
 
-  const { parentJob, childJob } = await waitForJobCompletion(requestedJobId, correlationId, {
-    userToken,
-  });
+  let parentJob: TdmJob;
+  let childJob: TdmJob | null;
+
+  try {
+    const result = await waitForJobCompletion(requestedJobId, correlationId, { userToken });
+    parentJob = result.parentJob;
+    childJob = result.childJob;
+  } catch (waitError) {
+    // Quando o job falha com TDM_JOB_FAILED, ainda tentamos baixar o artefato
+    // para detectar SQLCODE=-904 (tabela DB2 indisponível). Isso permite exibir
+    // uma mensagem de diagnóstico específica em vez da mensagem genérica de falha.
+    if (waitError instanceof AppError && waitError.code === 'TDM_JOB_FAILED') {
+      const failedParent = waitError.details as TdmJob;
+      const candidateChild = pickAnyChildJobWithArtifact(failedParent);
+      const candidateJobId = candidateChild?.jobId
+        ? Number(candidateChild.jobId)
+        : requestedJobId;
+
+      try {
+        const failedArtifact = await downloadArtifact(candidateJobId, correlationId, userToken);
+        const info = extractAccountInfoFromZip(failedArtifact.buffer, candidateJobId);
+        if (info.db2TableUnavailable) {
+          logger.warn('SQLCODE=-904 detectado no artefato de job falho', correlationId, {
+            requestedJobId,
+            candidateJobId,
+          });
+          throw new AppError(
+            502,
+            'Tabela DB2 indisponível (SQLCODE=-904). O job foi encerrado pelo TDM. Tente novamente mais tarde.',
+            'TDM_DB2_TABLE_UNAVAILABLE',
+            failedParent,
+          );
+        }
+      } catch (downloadError) {
+        // Se o próprio erro for o nosso AppError de DB2, propaga.
+        if (
+          downloadError instanceof AppError &&
+          downloadError.code === 'TDM_DB2_TABLE_UNAVAILABLE'
+        ) {
+          throw downloadError;
+        }
+        // Qualquer outro erro no download (ex.: artefato não disponível) é
+        // registrado mas não mascara o erro original de job falho.
+        logger.warn(
+          'Não foi possível baixar artefato do job falho para diagnóstico de SQLCODE=-904',
+          correlationId,
+          downloadError,
+        );
+      }
+    }
+    // Re-lança o erro original (TDM_JOB_FAILED ou qualquer outro).
+    throw waitError;
+  }
+
   const effectiveJobId = childJob?.jobId ? Number(childJob.jobId) : requestedJobId;
 
   const artifact = await downloadArtifact(effectiveJobId, correlationId, userToken);
@@ -262,7 +330,12 @@ async function submitAndDownload(
   // Tenta extrair Agência/Conta do artefato — só terá sucesso para a
   // rotina "Contas Correntes - PF" (Agendar Débito Automático), que gera
   // uma conta nova. Para outras rotinas, retorna found:false silenciosamente.
-  const extractedContaInfo = extractAccountInfoFromZip(artifact.buffer);
+  // Ajuste: adicione logging adicional ou outro rastreamento pelo effectiveJobId
+  logger.info('Extrair informações da conta usando o Job ID', correlationId, {
+    effectiveJobId,
+  });
+
+  const extractedContaInfo = extractAccountInfoFromZip(artifact.buffer, effectiveJobId);
   if (extractedContaInfo.found) {
     logger.info('Conta extraída do artefato', correlationId, extractedContaInfo);
   }

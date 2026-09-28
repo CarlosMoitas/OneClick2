@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "commonjs",
     "moduleResolution": "node",
-    "types": ["node"],
+    "types": ["node", "jest"],
     "lib": ["ES2022"],
     "outDir": "dist",
     "rootDir": "src",

@@ -8,8 +8,18 @@ import { Catalog } from '../../core/models/catalog.model';
 // POC — Journey Progress (feature flag: showJourneyProgress)
 import { JourneyProgress } from '../../shared/components/journey-progress/journey-progress';
 
-/** ID do card que dispara a jornada visual (POC). */
-const CARD_ID_WITH_JOURNEY = 'cta-003';
+/** IDs dos cards que disparam a jornada visual e o painel de log. */
+const CARDS_WITH_JOURNEY = new Set(['cta-003', 'cta-005']);
+
+/**
+ * FEATURE FLAG — Painel "Acompanhamento do workflow" (debug de jornadas
+ * encadeadas). Exibido apenas enquanto estivermos desenvolvendo/validando
+ * novos workflows.
+ *
+ * Para ocultar novamente no futuro: basta trocar para `false` — não é
+ * necessário comentar/remover nenhum bloco de template.
+ */
+const SHOW_WORKFLOW_LOG = true;
 
 @Component({
   selector: 'app-home',
@@ -48,6 +58,7 @@ export class Home implements OnInit {
   readonly catalogs: Signal<Catalog[]>;
   readonly errorMessage: Signal<string | null>;
   readonly workflowLog;
+  readonly lastCreatedAccount;
   readonly filteredCards;
 
   /**
@@ -57,6 +68,9 @@ export class Home implements OnInit {
    */
   readonly showJourneyProgress = signal(false);
 
+  /** Espelha a feature flag `SHOW_WORKFLOW_LOG` para uso no template. */
+  readonly showWorkflowLog = signal(SHOW_WORKFLOW_LOG);
+
   constructor(
     private readonly homeFacade: HomeFacade,
     readonly authService: AuthService,
@@ -64,6 +78,7 @@ export class Home implements OnInit {
     this.catalogs = this.homeFacade.catalogs;
     this.errorMessage = this.homeFacade.errorMessage;
     this.workflowLog = this.homeFacade.workflowLog;
+    this.lastCreatedAccount = this.homeFacade.lastCreatedAccount;
 
     this.filteredCards = computed(() => {
       const catalogId = this._selectedCatalogId();
@@ -87,8 +102,8 @@ export class Home implements OnInit {
   }
 
   onGenerate(event: { cardId: string; environment?: string; agency?: string }): void {
-    // POC: ativa o journey progress ao clicar em "Gerar Massa" no card cta-003
-    if (event.cardId === CARD_ID_WITH_JOURNEY) {
+    // POC: ativa o journey progress ao clicar em "Gerar Massa" nos cards com workflow real
+    if (CARDS_WITH_JOURNEY.has(event.cardId)) {
       this.showJourneyProgress.set(true);
     }
     // A lógica de negócio real permanece completamente inalterada

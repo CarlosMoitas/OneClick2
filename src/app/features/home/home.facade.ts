@@ -11,26 +11,81 @@ import {
 } from './builders/agendar-debito-automatico.builder';
 import { buildHabilitarContaMaPayload } from './builders/habilitar-conta-ma.builder';
 import { buildDebitoAutomaticoPayload } from './builders/debito-automatico.builder';
+import {
+  CadastroClientesPsdcFormData,
+  buildCadastroClientesPsdcPayload,
+} from './builders/cadastro-clientes-psdc.builder';
+import {
+  ContasCorrentesPjFormData,
+  buildContasCorrentesPjPayload,
+} from './builders/contas-correntes-pj.builder';
+import {
+  ContasCorrentesPfFormData,
+  buildContasCorrentesPfPayload,
+} from './builders/contas-correntes-pf.builder';
+import {
+  HabilitarContaMaPjFormData,
+  buildHabilitarContaMaPjPayload,
+} from './builders/habilitar-conta-ma-pj.builder';
+import {
+  IncluirProcuradorPjFormData,
+  buildIncluirProcuradorPjPayload,
+} from './builders/incluir-procurador-pj.builder';
+import {
+  BrobGeracaoContratoFormData,
+  buildBrobGeracaoContratoPayload,
+} from './builders/brob-geracao-contrato.builder';
 import { DEFAULT_WORKFLOW_ENVIRONMENT, WorkflowEnvironment } from './builders/workflow-environment';
 import { WORKFLOW_PROJETO_JIRA, WORKFLOW_USERNAME_FALLBACK } from './builders/shared-request-defaults';
 import { AuthService } from '../../core/services/auth.service';
 // POC Journey Progress — injeção somente visual, não altera lógica de negócio
-import { JourneyProgressService, ABERTURA_CONTAS_STEPS } from '../../shared/services/journey-progress.service';
+import {
+  JourneyProgressService,
+  ABERTURA_CONTAS_STEPS,
+  MASSA_DADOS_PJ_STEPS,
+} from '../../shared/services/journey-progress.service';
 
 /** ID do primeiro card com integração real ao Gateway TDM. */
 const CARD_ID_AGENDAR_DEBITO_AUTOMATICO = 'cta-003';
 
-/** Step IDs do Journey Progress que espelham as etapas da jornada. */
+/** ID do card "Massa de Dados PJ". */
+const CARD_ID_MASSA_DADOS_PJ = 'cta-005';
+
+/** Step IDs do Journey Progress que espelham as etapas da jornada "Abertura de Contas". */
 const JP_STEP_PORTAL_TDM = 0;        // "Portal TDM" — marcado success ao iniciar (conexão já estabelecida)
 const JP_STEP_CONTAS_CORRENTES = 1;
 const JP_STEP_HABILITAR_MA = 2;
 const JP_STEP_DEBITO_AUTOMATICO = 3;
+
+/** Step IDs do Journey Progress para o workflow "Massa de Dados PJ". */
+const JP_PJ_STEP_PORTAL_TDM = 0;           // "Portal TDM" — marcado success ao iniciar
+const JP_PJ_STEP_CADASTRO_PSDC = 1;        // "Cadastro de Clientes PSDC"
+const JP_PJ_STEP_CONTAS_CORRENTES_PJ = 2;  // "Contas Correntes PJ"
+const JP_PJ_STEP_CONTAS_CORRENTES_PF = 3;  // "Contas Correntes PF"
+const JP_PJ_STEP_HABILITAR_CONTA_MA = 4;   // "Habilitar Conta no MA"
+const JP_PJ_STEP_INCLUIR_PROCURADOR = 5;   // "Incluir Procurador PJ"
+const JP_PJ_STEP_BROB_GERACAO_CONTRATO = 6; // "BROB - Geração de Contrato"
 
 /** Linha exibida no painel de acompanhamento em tempo real do workflow. */
 export interface WorkflowLogEntry {
   timestamp: string;
   message: string;
   level: 'info' | 'success' | 'error';
+}
+
+/**
+ * Resumo da conta corrente criada durante o workflow — exibido de forma
+ * destacada no painel "Acompanhamento do workflow", além de aparecer
+ * também no log em texto corrido. Preenchido assim que a conta é
+ * extraída do artefato e permanece na tela até o usuário iniciar um
+ * novo workflow (não é limpo ao concluir o workflow atual).
+ */
+export interface CreatedAccountSummary {
+  workflowLabel: string;
+  agencia: string;
+  conta: string;
+  digito?: string;
+  cpfCliente?: string;
 }
 
 /**
@@ -46,6 +101,24 @@ interface WorkflowContext {
   conta: string;
   /** Username do usuário autenticado no Portal — quem está executando a ação. */
   username: string;
+  /**
+   * CPF do cliente gerado no step "Contas Correntes - PF", extraído do artefato (.zip)
+   * a partir do Data Pool (CCGC_CPF + CCTRL_CPF_CGC).
+   * Usado posteriormente no card "BROB - Geração de Contrato".
+   */
+  cpfCliente?: string;
+  /** CPF base utilizado no BROB. */
+  cpfBase?: string;
+}
+
+interface WorkflowPjContext {
+  agencia: string;
+  conta: string;
+  digito?: string;
+  username: string;
+  cpfCliente?: string;
+  /** CPF base utilizado no BROB. */
+  cpfBase?: string;
 }
 
 /**
@@ -71,12 +144,19 @@ export class HomeFacade {
   private readonly _errorMessage = signal<string | null>(null);
   private readonly _lastExecution = signal<Execution | null>(null);
   private readonly _workflowLog = signal<WorkflowLogEntry[]>([]);
+  /**
+   * Resumo destacado da conta corrente criada — permanece preenchido
+   * mesmo após o workflow concluir, até que um novo workflow seja
+   * iniciado (ver `generateMass`, que o reseta ao começar nova execução).
+   */
+  private readonly _lastCreatedAccount = signal<CreatedAccountSummary | null>(null);
 
   readonly catalogs = computed(() => this._catalogs());
   readonly cards = computed(() => this._cards());
   readonly errorMessage = computed(() => this._errorMessage());
   readonly lastExecution = computed(() => this._lastExecution());
   readonly workflowLog = computed(() => this._workflowLog());
+  readonly lastCreatedAccount = computed(() => this._lastCreatedAccount());
 
   constructor(
     private readonly catalogService: CatalogService,
@@ -116,6 +196,7 @@ export class HomeFacade {
 
     if (cardId === CARD_ID_AGENDAR_DEBITO_AUTOMATICO) {
       this._workflowLog.set([]);
+      this._lastCreatedAccount.set(null);
       this.pushLog('info', 'Workflow "Abertura de Contas" iniciado.');
 
       // POC: inicializa o tracker visual com os 4 steps (Portal TDM + 3 reais)
@@ -127,6 +208,23 @@ export class HomeFacade {
       this.executeAgendarDebitoAutomatico({
         environment: workflowEnvironment ?? DEFAULT_WORKFLOW_ENVIRONMENT,
         agency,
+        username: this.authService.user()?.username,
+      });
+      return;
+    }
+
+    if (cardId === CARD_ID_MASSA_DADOS_PJ) {
+      this._workflowLog.set([]);
+      this._lastCreatedAccount.set(null);
+      this.pushLog('info', 'Workflow "Massa de Dados PJ" iniciado.');
+
+      // Inicializa o tracker visual com 4 steps reais (Portal TDM + 4 etapas)
+      this.journeyProgress.initJourney([...MASSA_DADOS_PJ_STEPS]);
+      // Portal TDM: conexão já estabelecida — marca como success imediatamente
+      this.journeyProgress.startStep(JP_PJ_STEP_PORTAL_TDM);
+      this.journeyProgress.completeStep(JP_PJ_STEP_PORTAL_TDM);
+
+      this.executeCadastroClientesPsdc({
         username: this.authService.user()?.username,
       });
       return;
@@ -181,42 +279,64 @@ export class HomeFacade {
         // Encadeamento do workflow: se a conta corrente foi criada com
         // sucesso (extraída do artefato), monta o contexto compartilhado
         // e dispara automaticamente o card "Habilitar Conta MA".
-        const contaInfo = execution.extractedContaInfo;
-        if (contaInfo?.found && contaInfo.conta) {
-          const context: WorkflowContext = {
-            environment,
-            agencia: contaInfo.agencia || agencia || '',
-            projetoJira: WORKFLOW_PROJETO_JIRA,
-            conta: contaInfo.conta,
-            username: formData.username || WORKFLOW_USERNAME_FALLBACK,
-          };
-          this.pushLog(
-            'success',
-            `[1/3] Conta capturada do log dentro do .zip: agência ${context.agencia}, conta ${context.conta}.`,
-          );
-          // POC: conclui step 1, avança para step 2
-          this.journeyProgress.completeStep(JP_STEP_CONTAS_CORRENTES);
-          this.executeHabilitarContaMa(context);
-        } else {
-          this.logger.warn(
-            'Conta não foi extraída do artefato — os próximos cards não serão disparados automaticamente.',
-            undefined,
-            contaInfo,
-          );
-          this.pushLog(
-            'error',
-            `[1/3] Não foi possível extrair a conta do log dentro do .zip — ${
-              contaInfo?.reason ?? 'motivo desconhecido'
-            }. Workflow interrompido.`,
-          );
-          // POC: falha no step 1 com motivo
-          this.journeyProgress.failStep(
-            JP_STEP_CONTAS_CORRENTES,
-            contaInfo?.reason ?? 'Conta não extraída do artefato',
-          );
-        }
+const contaInfo = execution.extractedContaInfo;
+if (contaInfo?.found && contaInfo.conta) {
+  const context: WorkflowContext = {
+    environment,
+    agencia: contaInfo.agencia || agencia || '',
+    projetoJira: WORKFLOW_PROJETO_JIRA,
+    conta: contaInfo.conta,
+    username: formData.username || WORKFLOW_USERNAME_FALLBACK,
+    // Adiciona CPF base (CCGC_CPF)
+    cpfBase: contaInfo.cpfCliente?.slice(0, 9),
+    cpfCliente: contaInfo.cpfCliente,
+  };
+
+  this.pushLog(
+    'success',
+    `[1/3] Conta capturada do log dentro do .zip: agência ${context.agencia}, conta ${context.conta}. CPF Cliente: ${contaInfo.cpfCliente ?? 'não disponível'}`,
+  );
+  this._lastCreatedAccount.set({
+    workflowLabel: 'Contas Correntes - PF',
+    agencia: context.agencia,
+    conta: context.conta,
+    cpfCliente: contaInfo.cpfCliente,
+  });
+  // POC: conclui step 1, avança para step 2
+  this.journeyProgress.completeStep(JP_STEP_CONTAS_CORRENTES);
+  this.executeHabilitarContaMa(context);
+} else {
+  this.logger.warn(
+    'Conta não foi extraída do artefato — os próximos cards não serão disparados automaticamente.',
+    undefined,
+    contaInfo,
+  );
+  if (contaInfo?.db2TableUnavailable) {
+    this.pushLog(
+      'error',
+      '[1/3] ⚠️ SQLCODE=-904 detectado no artefato — tabela DB2 indisponível durante a execução. Tente novamente mais tarde.',
+    );
+  }
+  this.pushLog(
+    'error',
+    `[1/3] Não foi possível extrair a conta do log dentro do .zip — ${
+      contaInfo?.reason ?? 'motivo desconhecido'
+    }. Workflow interrompido.`,
+  );
+  // POC: falha no step 1 com motivo
+  this.journeyProgress.failStep(
+    JP_STEP_CONTAS_CORRENTES,
+    contaInfo?.reason ?? 'Conta não extraída do artefato',
+  );
+}
       },
       error: (error: ApiError) => {
+        if (error.message?.includes('SQLCODE=-904')) {
+          this.pushLog(
+            'error',
+            '[1/3] ⚠️ SQLCODE=-904 detectado — tabela DB2 indisponível. O job foi encerrado pelo TDM. Tente novamente mais tarde.',
+          );
+        }
         this.pushLog('error', `[1/3] Contas Correntes - PF: erro — ${error.message}`);
         this.handleError('Falha ao executar Agendar Débito Automático no TDM', error);
         // POC: falha no step 1
@@ -334,6 +454,370 @@ export class HomeFacade {
         this.handleError('Falha ao executar Débito Automático no TDM', error);
         // POC: falha no step 3
         this.journeyProgress.failStep(JP_STEP_DEBITO_AUTOMATICO, error.message);
+      },
+    });
+  }
+
+  /**
+   * Primeira etapa do workflow "Massa de Dados PJ":
+   * submete o job "Cadastro de Clientes - PSDC" ao Gateway TDM.
+   * Ao concluir com sucesso, encadeia automaticamente a segunda etapa
+   * "Contas Correntes - PJ".
+   */
+  private executeCadastroClientesPsdc(formData: CadastroClientesPsdcFormData): void {
+    const payload = buildCadastroClientesPsdcPayload(formData);
+    this.logger.debug('Payload gerado para Cadastro de Clientes PSDC', undefined, payload);
+    this.pushLog('info', '[1/5] Cadastro de Clientes PSDC: enviando request ao Gateway...');
+
+    // Inicia o step 1 no tracker visual
+    this.journeyProgress.startStep(JP_PJ_STEP_CADASTRO_PSDC);
+
+    this.executionService.execute(payload).subscribe({
+      next: (execution) => {
+        this.logger.info('Execução concluída (Cadastro de Clientes PSDC)', undefined, execution);
+        this._lastExecution.set(execution);
+
+        if (!execution.success) {
+          const message =
+            execution.message ?? 'A execução de Cadastro de Clientes PSDC no TDM não foi concluída com sucesso.';
+          this.pushLog('error', `[1/5] Cadastro de Clientes PSDC: falhou — ${message}`);
+          this._errorMessage.set(message);
+          this.journeyProgress.failStep(JP_PJ_STEP_CADASTRO_PSDC, message);
+          return;
+        }
+
+        this.pushLog(
+          'success',
+          `[1/5] Cadastro de Clientes PSDC: concluído (job ${execution.effectiveJobId ?? execution.requestedJobId}).`,
+        );
+
+        if (execution.sizeBytes) {
+          this.pushLog('info', `[1/5] Artefato .zip processado em memória (${execution.sizeBytes} bytes).`);
+        }
+
+        // Conclui step 1 e encadeia step 2
+        this.journeyProgress.completeStep(JP_PJ_STEP_CADASTRO_PSDC);
+        this.executeContasCorrentesPj({
+          username: formData.username,
+        });
+      },
+      error: (error: ApiError) => {
+        this.pushLog('error', `[1/5] Cadastro de Clientes PSDC: erro — ${error.message}`);
+        this.handleError('Falha ao executar Cadastro de Clientes PSDC no TDM', error);
+        this.journeyProgress.failStep(JP_PJ_STEP_CADASTRO_PSDC, error.message);
+      },
+    });
+  }
+
+  /**
+   * Segunda etapa do workflow "Massa de Dados PJ":
+   * submete o job "Contas Correntes - PJ Data Request" ao Gateway TDM.
+   * Ao concluir com sucesso, encadeia automaticamente a terceira etapa
+   * "Contas Correntes - PF".
+   */
+  private executeContasCorrentesPj(formData: ContasCorrentesPjFormData): void {
+    const payload = buildContasCorrentesPjPayload(formData);
+    this.logger.debug('Payload gerado para Contas Correntes PJ', undefined, payload);
+    this.pushLog('info', '[2/5] Contas Correntes - PJ: enviando request ao Gateway...');
+
+    // Inicia o step 2 no tracker visual
+    this.journeyProgress.startStep(JP_PJ_STEP_CONTAS_CORRENTES_PJ);
+
+    this.executionService.execute(payload).subscribe({
+      next: (execution) => {
+        this.logger.info('Execução concluída (Contas Correntes PJ)', undefined, execution);
+        this._lastExecution.set(execution);
+
+        if (!execution.success) {
+          const message =
+            execution.message ?? 'A execução de Contas Correntes PJ no TDM não foi concluída com sucesso.';
+          this.pushLog('error', `[2/5] Contas Correntes - PJ: falhou — ${message}`);
+          this._errorMessage.set(message);
+          this.journeyProgress.failStep(JP_PJ_STEP_CONTAS_CORRENTES_PJ, message);
+          return;
+        }
+
+        this.pushLog(
+          'success',
+          `[2/5] Contas Correntes - PJ: concluído (job ${execution.effectiveJobId ?? execution.requestedJobId}).`,
+        );
+
+        if (execution.sizeBytes) {
+          this.pushLog('info', `[2/5] Artefato .zip processado em memória (${execution.sizeBytes} bytes).`);
+        }
+
+        this.journeyProgress.completeStep(JP_PJ_STEP_CONTAS_CORRENTES_PJ);
+        this.executeContasCorrentesPf({
+          username: formData.username,
+        });
+      },
+      error: (error: ApiError) => {
+        this.pushLog('error', `[2/5] Contas Correntes - PJ: erro — ${error.message}`);
+        this.handleError('Falha ao executar Contas Correntes PJ no TDM', error);
+        this.journeyProgress.failStep(JP_PJ_STEP_CONTAS_CORRENTES_PJ, error.message);
+      },
+    });
+  }
+
+  /**
+   * Terceira etapa do workflow "Massa de Dados PJ":
+   * submete o job "Contas Correntes - PF Data Request" ao Gateway TDM.
+   * Ao concluir com sucesso, dispara automaticamente o step
+   * "Habilitar Conta no MA" usando a agência/conta extraídas da etapa PJ.
+   */
+  private executeContasCorrentesPf(formData: ContasCorrentesPfFormData): void {
+    const payload = buildContasCorrentesPfPayload(formData);
+    this.logger.debug('Payload gerado para Contas Correntes PF', undefined, payload);
+    this.pushLog('info', '[3/5] Contas Correntes - PF: enviando request ao Gateway...');
+
+    this.journeyProgress.startStep(JP_PJ_STEP_CONTAS_CORRENTES_PF);
+
+    this.executionService.execute(payload).subscribe({
+      next: (execution) => {
+        this.logger.info('Execução concluída (Contas Correntes PF)', undefined, execution);
+        this._lastExecution.set(execution);
+
+        if (!execution.success) {
+          const message =
+            execution.message ?? 'A execução de Contas Correntes PF no TDM não foi concluída com sucesso.';
+          this.pushLog('error', `[3/5] Contas Correntes - PF: falhou — ${message}`);
+          this._errorMessage.set(message);
+          this.journeyProgress.failStep(JP_PJ_STEP_CONTAS_CORRENTES_PF, message);
+          return;
+        }
+
+        this.pushLog(
+          'success',
+          `[3/5] Contas Correntes - PF: concluído (job ${execution.effectiveJobId ?? execution.requestedJobId}).`,
+        );
+
+        if (execution.sizeBytes) {
+          this.pushLog('info', `[3/5] Artefato .zip processado em memória (${execution.sizeBytes} bytes).`);
+        }
+
+        const contaInfo = execution.extractedContaInfo;
+        const hasContaPf = Boolean(contaInfo?.found && contaInfo.agencia && contaInfo.conta);
+        const hasCpfCliente = Boolean(contaInfo?.cpfCliente);
+
+        if (hasContaPf) {
+          const context: WorkflowPjContext = {
+            agencia: contaInfo!.agencia!,
+            conta: contaInfo!.conta!,
+            digito: contaInfo!.digito,
+            username: formData.username || WORKFLOW_USERNAME_FALLBACK,
+            cpfCliente: contaInfo!.cpfCliente,
+            cpfBase: contaInfo!.cpfCliente?.slice(0, 9),
+          };
+
+          this.pushLog(
+            'success',
+            `[3/5] Conta PF capturada do log: agência ${context.agencia}, conta ${context.conta}${
+              context.digito != null ? `, dígito ${context.digito}` : ''
+            }.`,
+          );
+
+          if (hasCpfCliente) {
+            this.pushLog(
+              'success',
+              `[3/5] CPF Cliente capturado do Data Pool e concatenado: ${contaInfo!.cpfCliente}`,
+            );
+          } else {
+            this.pushLog('error', '[3/5] CPF Cliente não encontrado no Data Pool (CCGC_CPF/CCTRL_CPF_CGC).');
+          }
+
+          this._lastCreatedAccount.set({
+            workflowLabel: 'Contas Correntes - PF',
+            agencia: context.agencia,
+            conta: context.conta,
+            digito: context.digito,
+            cpfCliente: contaInfo!.cpfCliente,
+          });
+
+          this.journeyProgress.completeStep(JP_PJ_STEP_CONTAS_CORRENTES_PF);
+          this.executeHabilitarContaMaPj(context);
+          return;
+        }
+
+        if (hasCpfCliente) {
+          this.pushLog(
+            'success',
+            `[3/5] CPF Cliente capturado do Data Pool e concatenado: ${contaInfo!.cpfCliente}`,
+          );
+        }
+
+        if (contaInfo?.db2TableUnavailable) {
+          this.pushLog(
+            'error',
+            '[3/5] ⚠️ SQLCODE=-904 detectado no artefato — tabela DB2 indisponível durante a execução. Tente novamente mais tarde.',
+          );
+        }
+        this._errorMessage.set(
+          contaInfo?.reason ?? 'Não foi possível extrair agência/conta do artefato do step PJ.',
+        );
+        this.pushLog(
+          'error',
+          `[3/5] Não foi possível extrair agência/conta do artefato do step PJ — ${
+            contaInfo?.reason ?? 'motivo desconhecido'
+          }. Workflow interrompido.`,
+        );
+        this.journeyProgress.failStep(
+          JP_PJ_STEP_CONTAS_CORRENTES_PF,
+          contaInfo?.reason ?? 'Agência/conta não extraídas do artefato',
+        );
+      },
+      error: (error: ApiError) => {
+        if (error.message?.includes('SQLCODE=-904')) {
+          this.pushLog(
+            'error',
+            '[3/5] ⚠️ SQLCODE=-904 detectado — tabela DB2 indisponível. O job foi encerrado pelo TDM. Tente novamente mais tarde.',
+          );
+        }
+        this.pushLog('error', `[3/5] Contas Correntes - PF: erro — ${error.message}`);
+        this.handleError('Falha ao executar Contas Correntes PF no TDM', error);
+        this.journeyProgress.failStep(JP_PJ_STEP_CONTAS_CORRENTES_PF, error.message);
+      },
+    });
+  }
+
+  /**
+   * Quarta e última etapa do workflow "Massa de Dados PJ":
+   * habilita a conta no MA usando agência/conta extraídas da própria
+   * jornada cta-005.
+   */
+  private executeHabilitarContaMaPj(context: WorkflowPjContext): void {
+    const payload = buildHabilitarContaMaPjPayload({
+      agencia: context.agencia,
+      conta: context.conta,
+      username: context.username,
+    });
+    this.logger.debug('Payload gerado para Habilitar Conta no MA (PJ)', undefined, payload);
+    this.pushLog('info', '[4/5] Habilitar Conta no MA: enviando request ao Gateway...');
+
+    this.journeyProgress.startStep(JP_PJ_STEP_HABILITAR_CONTA_MA);
+
+    this.executionService.execute(payload).subscribe({
+      next: (execution) => {
+        this.logger.info('Execução concluída (Habilitar Conta no MA - PJ)', undefined, execution);
+        this._lastExecution.set(execution);
+
+        if (!execution.success) {
+          const message =
+            execution.message ?? 'A execução de Habilitar Conta no MA no TDM não foi concluída com sucesso.';
+          this.pushLog('error', `[4/5] Habilitar Conta no MA: falhou — ${message}`);
+          this._errorMessage.set(message);
+          this.journeyProgress.failStep(JP_PJ_STEP_HABILITAR_CONTA_MA, message);
+          return;
+        }
+
+        this.pushLog(
+          'success',
+          `[4/5] Habilitar Conta no MA: concluído (job ${execution.effectiveJobId ?? execution.requestedJobId}).`,
+        );
+
+        this.journeyProgress.completeStep(JP_PJ_STEP_HABILITAR_CONTA_MA);
+
+        // Quinta etapa: Incluir Procurador PJ, reutilizando a
+        // mesma agência/conta já extraídas do step "Contas Correntes - PF".
+        this.executeIncluirProcuradorPj(context);
+      },
+      error: (error: ApiError) => {
+        this.pushLog('error', `[4/5] Habilitar Conta no MA: erro — ${error.message}`);
+        this.handleError('Falha ao executar Habilitar Conta no MA (PJ) no TDM', error);
+        this.journeyProgress.failStep(JP_PJ_STEP_HABILITAR_CONTA_MA, error.message);
+      },
+    });
+  }
+
+  /**
+   * Quinta etapa do workflow "Massa de Dados PJ":
+   * inclui procurador na conta PJ recém-habilitada no MA, usando a mesma
+   * agência/conta extraídas do step "Contas Correntes - PF".
+   */
+  private executeIncluirProcuradorPj(context: WorkflowPjContext): void {
+    const payload = buildIncluirProcuradorPjPayload({
+      agencia: context.agencia,
+      conta: context.conta,
+      username: context.username,
+    });
+    this.logger.debug('Payload gerado para Incluir Procurador PJ', undefined, payload);
+    this.pushLog('info', '[5/5] Incluir Procurador PJ: enviando request ao Gateway...');
+
+    this.journeyProgress.startStep(JP_PJ_STEP_INCLUIR_PROCURADOR);
+
+    this.executionService.execute(payload).subscribe({
+      next: (execution) => {
+        this.logger.info('Execução concluída (Incluir Procurador PJ)', undefined, execution);
+        this._lastExecution.set(execution);
+
+        if (!execution.success) {
+          const message =
+            execution.message ?? 'A execução de Incluir Procurador PJ no TDM não foi concluída com sucesso.';
+          this.pushLog('error', `[5/5] Incluir Procurador PJ: falhou — ${message}`);
+          this._errorMessage.set(message);
+          this.journeyProgress.failStep(JP_PJ_STEP_INCLUIR_PROCURADOR, message);
+          return;
+        }
+
+        this.pushLog(
+          'success',
+          `[5/6] Incluir Procurador PJ: concluído (job ${execution.effectiveJobId ?? execution.requestedJobId}).`,
+        );
+
+        this.journeyProgress.completeStep(JP_PJ_STEP_INCLUIR_PROCURADOR);
+        this.executeBrobGeracaoContrato({
+          agencia: context.agencia,
+          conta: context.conta,
+          cpfCliente: context.cpfCliente ?? '',
+          cpfBase: context.cpfBase ?? '',
+          username: context.username,
+        });
+      },
+      error: (error: ApiError) => {
+        this.pushLog('error', `[5/5] Incluir Procurador PJ: erro — ${error.message}`);
+        this.handleError('Falha ao executar Incluir Procurador PJ no TDM', error);
+        this.journeyProgress.failStep(JP_PJ_STEP_INCLUIR_PROCURADOR, error.message);
+      },
+    });
+  }
+
+  /**
+   * Sexta etapa do workflow "Massa de Dados PJ":
+   * envia payload ao BROB - Geração de Contrato.
+   */
+  private executeBrobGeracaoContrato(formData: BrobGeracaoContratoFormData): void {
+    const payload = buildBrobGeracaoContratoPayload(formData);
+    this.logger.debug('Payload gerado para BROB - Geração de Contrato', undefined, payload);
+    this.pushLog('info', '[6/6] BROB - Geração de Contrato: enviando request ao Gateway...');
+
+    this.journeyProgress.startStep(JP_PJ_STEP_BROB_GERACAO_CONTRATO);
+
+    this.executionService.execute(payload).subscribe({
+      next: (execution) => {
+        this.logger.info('Execução concluída (BROB - Geração de Contrato)', undefined, execution);
+        this._lastExecution.set(execution);
+
+        if (!execution.success) {
+          const message =
+            execution.message ?? 'A execução de BROB - Geração de Contrato no TDM não foi concluída com sucesso.';
+          this.pushLog('error', `[6/6] BROB - Geração de Contrato: falhou — ${message}`);
+          this._errorMessage.set(message);
+          this.journeyProgress.failStep(JP_PJ_STEP_BROB_GERACAO_CONTRATO, message);
+          return;
+        }
+
+        this.pushLog(
+          'success',
+          `[6/6] BROB - Geração de Contrato: concluído (job ${execution.effectiveJobId ?? execution.requestedJobId}).`,
+        );
+
+        this.pushLog('success', 'Workflow "Massa de Dados PJ" concluído com sucesso.');
+
+        this.journeyProgress.completeStep(JP_PJ_STEP_BROB_GERACAO_CONTRATO);
+      },
+      error: (error: ApiError) => {
+        this.pushLog('error', `[6/6] BROB - Geração de Contrato: erro — ${error.message}`);
+        this.handleError('Falha ao executar BROB - Geração de Contrato no TDM', error);
+        this.journeyProgress.failStep(JP_PJ_STEP_BROB_GERACAO_CONTRATO, error.message);
       },
     });
   }

@@ -31,6 +31,8 @@ export class Navbar {
     switch (this.connectionStatus()) {
       case 'ready':
         return 'Gateway Online';
+      case 'tdm-down':
+        return 'TDM Indisponível';
       case 'degraded':
         return 'Gateway Indisponível';
       default:

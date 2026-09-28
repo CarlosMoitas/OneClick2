@@ -16,9 +16,13 @@ export const routes: Routes = [
     path: 'chat',
     component: ChatPage,
   },
-  {
-    path: '',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/home/home').then((m) => m.Home),
-  },
+{
+  path: '',
+  canActivate: [authGuard],
+  loadComponent: () => import('./features/home/home').then((m) => m.Home),
+},
+{
+  path: 'massa-dados-pj',
+  loadComponent: () => import('./components/massa-dados-pj/massa-dados-pj.component').then(c => c.MassaDadosPjComponent),
+},
 ];

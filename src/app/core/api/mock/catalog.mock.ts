@@ -34,6 +34,12 @@ export const MOCK_CARDS: CardResponseDto[] = [
     requiresAgencyInput: false,
     // journeyImage: 'img/jornada-mile-stone.png', // Oculto temporariamente — para reabilitar descomentar esta linha
   },
+  {
+    id: 'cta-005',
+    title: 'Massa de Dados PJ',
+    project: 'Contas',
+    catalogId: 'abertura-contas',
+  },
   // cta-004 — Oculto temporariamente.
   // Futuro: seletor de ambiente TI/TU para o usuário escolher antes de executar a jornada.
   // Para reabilitar basta descomentar o objeto abaixo:

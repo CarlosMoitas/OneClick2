@@ -10,6 +10,15 @@ export interface ExtractedContaInfo {
   found: boolean;
   agencia?: string;
   conta?: string;
+  /** Dígito verificador da conta — presente em workflows PJ (cta-005). */
+  digito?: string;
+  /** CPF do cliente montado a partir de CCGC_CPF(9) + CCTRL_CPF_CGC(2). */
+  cpfCliente?: string;
+  /**
+   * `true` quando o artefato contém SQLCODE=-904 — tabela DB2 indisponível.
+   * Permite ao frontend exibir diagnóstico específico em vez da mensagem genérica.
+   */
+  db2TableUnavailable?: boolean;
   reason?: string;
 }
 

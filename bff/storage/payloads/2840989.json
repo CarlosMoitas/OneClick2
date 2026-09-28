@@ -1,0 +1,96 @@
+{
+  "jobPubParams": {
+    "scheduledDateTimeInMillisec": "2026-09-23T13:22:41.921Z",
+    "almjobs": [],
+    "rallyJobs": [],
+    "jobParams": [],
+    "publishJobs": [
+      {
+        "batchEngineThread": "ANY",
+        "dataSourceProfile": "DB204P",
+        "dataTargetProfile": "DB204P",
+        "description": "",
+        "jobTitle": "Group Job",
+        "levelID": 3101,
+        "publishVariables": [
+          {
+            "name": "p_combo_ctpo_crtl_db_uf",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "01-SP                                      "
+          },
+          {
+            "name": "p_combo_ctpo_crtl_db",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "001-Energia Elétrica                   "
+          },
+          {
+            "name": "p_combo_empresa",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "2269651-0000000906-CETRIL/SP                                - 01237               "
+          },
+          {
+            "name": "p_agencia",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "3995"
+          },
+          {
+            "name": "p_conta",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "541999"
+          },
+          {
+            "name": "p_combo_contratante",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "999-NOVO CONTRATO"
+          },
+          {
+            "name": "p_qntd",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "1"
+          },
+          {
+            "name": "p_projeto_jira",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "ENGPBIA-ENGENHARIA DE PLATAFORMA | BIA TECH"
+          }
+        ],
+        "seq": 1,
+        "vtfnodeDesc": "Débito Automático Corrente Mobile e TF",
+        "vtfnodeID": "53470",
+        "vtfnodeName": "Débito Automático Corrente Mobile e TF",
+        "iterations": 1,
+        "csvDelimiter": null,
+        "csvQuotationMarks": null,
+        "configurationId": 2369
+      }
+    ],
+    "testMatches": [],
+    "exportJobs": [],
+    "scheduledDt": "2026-09-23T13:22:41.921Z",
+    "selfServiceEmailMandate": false,
+    "email": "carlosandre.moitas@bradesco.com.br",
+    "globalThreadName": "ANY",
+    "scheduledDateTimeInMillis": 1790169761921,
+    "currentDay": 23,
+    "currentMonth": 9,
+    "currentYear": 2026,
+    "globalSourceConnection": "DB204P",
+    "globalTargetConnection": "DB204P",
+    "jobSubmissionOrder": "0",
+    "jobTitle": "Débito Automático Data Request",
+    "username": "m627529"
+  },
+  "dataDesign": {
+    "projectID": 2346,
+    "versionID": 2351
+  },
+  "advancedToggleFlag": true
+}
