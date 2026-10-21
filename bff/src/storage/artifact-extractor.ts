@@ -24,33 +24,60 @@ export interface ExtractedAccountInfo {
    */
   cpfCliente?: string;
   /**
+   * Parte base do CPF (CCGC_CPF) já normalizada com leftPad para 9 dígitos.
+   * Mantida separadamente para permitir ao endpoint espelhar a mesma regra
+   * do card 005 no request do BROB (cpfBase ?? cpfCliente ?? '').
+   */
+  cpfBase?: string;
+  /**
    * `true` quando qualquer arquivo .log do artefato contém `SQLCODE=-904`,
    * indicando que uma tabela DB2 estava indisponível durante a execução.
    * Permite ao frontend exibir uma mensagem de diagnóstico específica.
    */
   db2TableUnavailable?: boolean;
+  /**
+   * `true` quando qualquer arquivo .log do artefato contém `SQLCODE=-803`,
+   * indicando violação de chave única (registro duplicado) na tabela DB2.
+   * Ocorre quando o TDM tenta inserir um dado que já existe no sistema.
+   * Permite ao frontend exibir mensagem orientando o usuário a verificar
+   * se o cliente/dado já está cadastrado antes de tentar novamente.
+   */
+  db2DuplicateKey?: boolean;
   reason?: string;
 }
 
 const TARGET_LOG_SUFFIX = 'Action_38_1_Workflow.log';
 const SQLCODE_904 = 'SQLCODE=-904';
+const SQLCODE_803 = 'SQLCODE=-803';
 
 /**
- * Varre TODOS os arquivos .log contidos no ZIP procurando pelo código de
- * erro DB2 SQLCODE=-904 (objeto indisponível/tabela bloqueada).
- * Retorna `true` assim que a primeira ocorrência for encontrada.
+ * Varre TODOS os arquivos .log contidos no ZIP em uma única passagem,
+ * procurando pelos códigos de erro DB2 conhecidos:
+ *   - SQLCODE=-904: objeto/tabela indisponível (bloqueio, manutenção)
+ *   - SQLCODE=-803: violação de chave única (registro duplicado)
+ *
+ * Retorna flags independentes para cada código encontrado.
  */
-function detectDb2TableUnavailable(entries: AdmZip.IZipEntry[]): boolean {
+function scanDb2Errors(entries: AdmZip.IZipEntry[]): {
+  tableUnavailable: boolean;
+  duplicateKey: boolean;
+} {
+  let tableUnavailable = false;
+  let duplicateKey = false;
+
   for (const entry of entries) {
     if (!entry.entryName.toLowerCase().endsWith('.log')) continue;
     try {
       const content = entry.getData().toString('utf8');
-      if (content.includes(SQLCODE_904)) return true;
+      if (content.includes(SQLCODE_904)) tableUnavailable = true;
+      if (content.includes(SQLCODE_803)) duplicateKey = true;
     } catch {
       // ignora entradas ilegíveis — não bloqueia a análise dos demais logs
     }
+    if (tableUnavailable && duplicateKey) break; // ambos encontrados, encerra cedo
   }
-  return false;
+
+  return { tableUnavailable, duplicateKey };
 }
 /**
  * Garante que o arquivo de log correto seja buscado pelo ID real do artefato (.zip)
@@ -120,7 +147,11 @@ function extractColumnValueFromDataPool(raw: string, columnName: string): string
   return undefined;
 }
 
-function extractCpfClienteFromLogContent(raw: string): { cpfCliente?: string; reason?: string } {
+function extractCpfClienteFromLogContent(raw: string): {
+  cpfCliente?: string;
+  cpfBase?: string;
+  reason?: string;
+} {
   const ccgcRaw = extractColumnValueFromDataPool(raw, 'CCGC_CPF');
   const cctrlRaw = extractColumnValueFromDataPool(raw, 'CCTRL_CPF_CGC');
 
@@ -143,7 +174,7 @@ function extractCpfClienteFromLogContent(raw: string): { cpfCliente?: string; re
     return { reason: `CPF montado com tamanho inválido (${cpfCliente.length}).` };
   }
 
-  return { cpfCliente };
+  return { cpfCliente, cpfBase };
 }
 
 /**
@@ -190,6 +221,7 @@ export function extractAccountInfoFromZip(buffer: Buffer, effectiveJobId?: strin
   let agencia: string | undefined;
   let conta: string | undefined;
   let cpfCliente: string | undefined;
+  let cpfBase: string | undefined;
 
   if (workflowEntry) {
     const raw = workflowEntry.getData().toString('utf8');
@@ -214,6 +246,7 @@ export function extractAccountInfoFromZip(buffer: Buffer, effectiveJobId?: strin
     const rawCpf = cpfEntry.getData().toString('utf8');
     const cpfResult = extractCpfClienteFromLogContent(rawCpf);
     cpfCliente = cpfResult.cpfCliente;
+    cpfBase = cpfResult.cpfBase;
   } else {
     // Fallback: tenta encontrar o CPF diretamente no workflow log (caso o Data Pool log não exista no ZIP)
     const fallbackEntry = workflowEntry;
@@ -221,18 +254,21 @@ export function extractAccountInfoFromZip(buffer: Buffer, effectiveJobId?: strin
       const rawFallback = fallbackEntry.getData().toString('utf8');
       const cpfResult = extractCpfClienteFromLogContent(rawFallback);
       cpfCliente = cpfResult.cpfCliente ?? cpfCliente;
+      cpfBase = cpfResult.cpfBase ?? cpfBase;
     }
   }
 
   const found = Boolean(agencia && conta);
-  const db2TableUnavailable = detectDb2TableUnavailable(entries) || undefined;
+  const { tableUnavailable, duplicateKey } = scanDb2Errors(entries);
 
   return {
     found,
     agencia,
     conta,
     cpfCliente,
-    db2TableUnavailable,
+    cpfBase,
+    db2TableUnavailable: tableUnavailable || undefined,
+    db2DuplicateKey: duplicateKey || undefined,
     reason:
       found || cpfCliente
         ? undefined

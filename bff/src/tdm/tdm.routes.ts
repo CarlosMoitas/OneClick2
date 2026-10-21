@@ -4,6 +4,8 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import { AppError } from '../middleware/error.middleware';
 import { authService } from '../auth/auth.service';
 import { SubmitRequestPayload } from './tdm.types';
+import { executarJornadaAberturaContas } from './abertura-contas-journey.service';
+import { executarJornadaMassaDadosPJ } from './massa-dados-pj-journey.service';
 
 export const tdmRouter = Router();
 
@@ -13,7 +15,15 @@ export const tdmRouter = Router();
  */
 tdmRouter.use(authMiddleware);
 
-tdmRouter.post('/requests/submit-and-download', async (req, res, next) => {
+/**
+ * Handler compartilhado por /requests/submit-and-download (legado)
+ * e por todos os endpoints de jornada nomeados.
+ */
+async function submitAndDownloadHandler(
+  req: Parameters<Parameters<typeof tdmRouter.post>[1]>[0],
+  res: Parameters<Parameters<typeof tdmRouter.post>[1]>[1],
+  next: Parameters<Parameters<typeof tdmRouter.post>[1]>[2],
+): Promise<void> {
   try {
     const payload = req.body as SubmitRequestPayload;
     // Resolve o token TDM do usuário logado — se disponível, os jobs
@@ -42,7 +52,9 @@ tdmRouter.post('/requests/submit-and-download', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}
+
+tdmRouter.post('/requests/submit-and-download', submitAndDownloadHandler);
 
 tdmRouter.get('/jobs/:jobId/status', async (req, res, next) => {
   try {
@@ -55,6 +67,44 @@ tdmRouter.get('/jobs/:jobId/status', async (req, res, next) => {
       ? authService.getUserTdmToken(req.user.username) ?? undefined
       : undefined;
     const result = await tdmService.getJobStatus(jobId, req.correlationId, userTdmToken);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+tdmRouter.post('/jornadas/abertura-contas', async (req, res, next) => {
+  try {
+    const { environment, agency, username } = req.body;
+    const userTdmToken = req.user?.username
+      ? authService.getUserTdmToken(req.user.username) ?? undefined
+      : undefined;
+
+    const result = await executarJornadaAberturaContas(
+      { environment, agency, username },
+      req.correlationId,
+      userTdmToken,
+    );
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+tdmRouter.post('/jornadas/massa-dados-pj', async (req, res, next) => {
+  try {
+    const { environment, agency, username } = req.body;
+    const userTdmToken = req.user?.username
+      ? authService.getUserTdmToken(req.user.username) ?? undefined
+      : undefined;
+
+    const result = await executarJornadaMassaDadosPJ(
+      { environment, agency, username },
+      req.correlationId,
+      userTdmToken,
+    );
+
     res.json(result);
   } catch (error) {
     next(error);
