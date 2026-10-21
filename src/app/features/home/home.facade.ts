@@ -331,10 +331,16 @@ if (contaInfo?.found && contaInfo.conta) {
 }
       },
       error: (error: ApiError) => {
-        if (error.message?.includes('SQLCODE=-904')) {
+        if (error.code === 'TDM_DB2_TABLE_UNAVAILABLE' || error.message?.includes('SQLCODE=-904')) {
           this.pushLog(
             'error',
             '[1/3] ⚠️ SQLCODE=-904 detectado — tabela DB2 indisponível. O job foi encerrado pelo TDM. Tente novamente mais tarde.',
+          );
+        }
+        if (error.code === 'TDM_DB2_DUPLICATE_KEY' || error.message?.includes('SQLCODE=-803')) {
+          this.pushLog(
+            'error',
+            '[1/3] ⚠️ SQLCODE=-803 detectado — dado já cadastrado (chave duplicada). Verifique se o cliente já possui cadastro ativo antes de tentar novamente.',
           );
         }
         this.pushLog('error', `[1/3] Contas Correntes - PF: erro — ${error.message}`);
@@ -560,7 +566,7 @@ if (contaInfo?.found && contaInfo.conta) {
   }
 
   /**
-   * Terceira etapa do workflow "Massa de Dados PJ":
+   *. Terceira etapa do workflow "Massa de Dados PJ":
    * submete o job "Contas Correntes - PF Data Request" ao Gateway TDM.
    * Ao concluir com sucesso, dispara automaticamente o step
    * "Habilitar Conta no MA" usando a agência/conta extraídas da etapa PJ.
@@ -651,6 +657,12 @@ if (contaInfo?.found && contaInfo.conta) {
             '[3/5] ⚠️ SQLCODE=-904 detectado no artefato — tabela DB2 indisponível durante a execução. Tente novamente mais tarde.',
           );
         }
+        if (contaInfo?.db2DuplicateKey) {
+          this.pushLog(
+            'error',
+            '[3/5] ⚠️ SQLCODE=-803 detectado no artefato — dado já cadastrado (chave duplicada). Verifique se o cliente já possui cadastro ativo antes de tentar novamente.',
+          );
+        }
         this._errorMessage.set(
           contaInfo?.reason ?? 'Não foi possível extrair agência/conta do artefato do step PJ.',
         );
@@ -666,10 +678,16 @@ if (contaInfo?.found && contaInfo.conta) {
         );
       },
       error: (error: ApiError) => {
-        if (error.message?.includes('SQLCODE=-904')) {
+        if (error.code === 'TDM_DB2_TABLE_UNAVAILABLE' || error.message?.includes('SQLCODE=-904')) {
           this.pushLog(
             'error',
             '[3/5] ⚠️ SQLCODE=-904 detectado — tabela DB2 indisponível. O job foi encerrado pelo TDM. Tente novamente mais tarde.',
+          );
+        }
+        if (error.code === 'TDM_DB2_DUPLICATE_KEY' || error.message?.includes('SQLCODE=-803')) {
+          this.pushLog(
+            'error',
+            '[3/5] ⚠️ SQLCODE=-803 detectado — dado já cadastrado (chave duplicada). Verifique se o cliente já possui cadastro ativo antes de tentar novamente.',
           );
         }
         this.pushLog('error', `[3/5] Contas Correntes - PF: erro — ${error.message}`);

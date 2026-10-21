@@ -19,6 +19,11 @@ export interface ExtractedContaInfo {
    * Permite ao frontend exibir diagnóstico específico em vez da mensagem genérica.
    */
   db2TableUnavailable?: boolean;
+  /**
+   * `true` quando o artefato contém SQLCODE=-803 — chave duplicada (dado já cadastrado).
+   * Permite ao frontend exibir diagnóstico específico de duplicidade.
+   */
+  db2DuplicateKey?: boolean;
   reason?: string;
 }
 

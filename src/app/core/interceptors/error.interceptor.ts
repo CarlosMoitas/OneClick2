@@ -203,6 +203,16 @@ function resolveMessageByBffCode(code?: string): string | undefined {
         'Não foi possível consultar o status do job no TDM. ' +
         'Verifique se a VPN está ativa e tente novamente.'
       );
+    case 'TDM_DB2_TABLE_UNAVAILABLE':
+      return (
+        '⚠️ Tabela DB2 indisponível (SQLCODE=-904). ' +
+        'O job foi encerrado pelo TDM. Tente novamente mais tarde.'
+      );
+    case 'TDM_DB2_DUPLICATE_KEY':
+      return (
+        '⚠️ Dado já cadastrado no sistema (SQLCODE=-803 — chave duplicada). ' +
+        'Verifique se o cliente já possui cadastro ativo antes de tentar novamente.'
+      );
     default:
       return undefined;
   }
