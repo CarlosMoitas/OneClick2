@@ -1,0 +1,96 @@
+{
+  "jobPubParams": {
+    "scheduledDateTimeInMillisec": "2026-10-27T14:25:08.564Z",
+    "almjobs": [],
+    "rallyJobs": [],
+    "jobParams": [],
+    "testMatches": [],
+    "exportJobs": [],
+    "scheduledDt": "2026-10-27T14:25:08.564Z",
+    "selfServiceEmailMandate": false,
+    "email": "Carlos.AndreMoitas@emeal.nttdata.com",
+    "globalThreadName": "ANY",
+    "scheduledDateTimeInMillis": 1793111108564,
+    "currentDay": 27,
+    "currentMonth": 10,
+    "currentYear": 2026,
+    "jobSubmissionOrder": "0",
+    "username": "m627529",
+    "publishJobs": [
+      {
+        "batchEngineThread": "ANY",
+        "dataSourceProfile": "",
+        "dataTargetProfile": "",
+        "description": "",
+        "jobTitle": "Group Job",
+        "levelID": 2954,
+        "publishVariables": [
+          {
+            "name": "p_tipo_cnpj",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "01-Numérico"
+          },
+          {
+            "name": "p_ambiente_gerar_conta",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "PCM2AB  - NOVO TI"
+          },
+          {
+            "name": "P_SEGMENTOCONTACORRENTEPJ",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "000-NAO SEGMENTADA"
+          },
+          {
+            "name": "p_agencia",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "448"
+          },
+          {
+            "name": "P_CNPJ",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "0"
+          },
+          {
+            "name": "p_porte_empresa_conta",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "03-MÉDIA EMPRESA"
+          },
+          {
+            "name": "p_projeto_jira",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "ENGPBIA-ENGENHARIA DE PLATAFORMA | BIA TECH"
+          }
+        ],
+        "seq": 1,
+        "vtfnodeDesc": "Abertura de Conta Corrente PJ Numérico",
+        "vtfnodeID": "440",
+        "vtfnodeName": "Abertura de Conta Corrente PJ Numérico",
+        "iterations": 1,
+        "csvDelimiter": null,
+        "csvQuotationMarks": null,
+        "configurationId": 2991
+      }
+    ],
+    "globalSourceConnection": "",
+    "globalTargetConnection": "",
+    "jobTitle": "Contas Correntes - PJ Data Request"
+  },
+  "dataDesign": {
+    "projectID": 2476,
+    "versionID": 2477
+  },
+  "publishVariables": [],
+  "advancedToggleFlag": true,
+  "almjobs": [],
+  "rallyJobs": [],
+  "jobParams": [],
+  "testMatches": [],
+  "exportJobs": []
+}

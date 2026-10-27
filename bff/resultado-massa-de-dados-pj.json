@@ -4,72 +4,72 @@
     "agencyRequested":  "448",
     "contaGerada":  {
                         "agencia":  "448",
-                        "conta":  "268023"
+                        "conta":  "268610"
                     },
-    "cpfCliente":  "60053612442",
+    "cpfCliente":  "66950253710",
     "steps":  [
                   {
                       "step":  "cadastro-clientes-psdc",
-                      "requestedJobId":  3067832,
-                      "childJobId":  3067833,
-                      "effectiveJobId":  3067833,
+                      "requestedJobId":  3078090,
+                      "childJobId":  3078091,
+                      "effectiveJobId":  3078091,
                       "parentStatus":  "Completed",
                       "childStatus":  "Completed",
                       "sizeBytes":  1486
                   },
                   {
                       "step":  "contas-correntes-pj",
-                      "requestedJobId":  3067834,
-                      "childJobId":  3067835,
-                      "effectiveJobId":  3067835,
+                      "requestedJobId":  3078100,
+                      "childJobId":  3078101,
+                      "effectiveJobId":  3078101,
                       "parentStatus":  "Completed",
                       "childStatus":  "Completed",
-                      "sizeBytes":  21077
+                      "sizeBytes":  21062
                   },
                   {
                       "step":  "contas-correntes-pf",
-                      "requestedJobId":  3067840,
-                      "childJobId":  3067841,
-                      "effectiveJobId":  3067841,
+                      "requestedJobId":  3078126,
+                      "childJobId":  3078127,
+                      "effectiveJobId":  3078127,
                       "parentStatus":  "Completed",
                       "childStatus":  "Completed",
-                      "sizeBytes":  29836,
+                      "sizeBytes":  29851,
                       "extractedContaInfo":  {
                                                  "found":  true,
                                                  "agencia":  "448",
-                                                 "conta":  "268023",
-                                                 "cpfCliente":  "60053612442"
+                                                 "conta":  "268610",
+                                                 "cpfCliente":  "66950253710"
                                              }
                   },
                   {
                       "step":  "habilitar-conta-ma",
-                      "requestedJobId":  3067844,
-                      "childJobId":  3067845,
-                      "effectiveJobId":  3067845,
+                      "requestedJobId":  3078146,
+                      "childJobId":  3078147,
+                      "effectiveJobId":  3078147,
                       "parentStatus":  "Completed",
                       "childStatus":  "Completed",
-                      "sizeBytes":  15509
+                      "sizeBytes":  15477
                   },
                   {
                       "step":  "incluir-procurador-pj",
-                      "requestedJobId":  3067846,
-                      "childJobId":  3067847,
-                      "effectiveJobId":  3067847,
+                      "requestedJobId":  3078160,
+                      "childJobId":  3078161,
+                      "effectiveJobId":  3078161,
                       "parentStatus":  "Completed",
                       "childStatus":  "Completed",
-                      "sizeBytes":  987
+                      "sizeBytes":  986
                   },
                   {
                       "step":  "brob-geracao-contrato",
-                      "requestedJobId":  3067848,
-                      "childJobId":  3067849,
-                      "effectiveJobId":  3067849,
+                      "requestedJobId":  3078162,
+                      "childJobId":  3078163,
+                      "effectiveJobId":  3078163,
                       "parentStatus":  "Completed",
                       "childStatus":  "Completed",
-                      "sizeBytes":  952
+                      "sizeBytes":  957
                   }
               ],
     "PSComputerName":  "localhost",
-    "RunspaceId":  "0429286d-3e32-41b7-82a8-57c80fde8192",
+    "RunspaceId":  "8eafe88b-ab4f-4602-8603-91247a07c472",
     "PSShowComputerName":  false
 }
