@@ -4,10 +4,27 @@
  * login com cache de token, submissão de request, status de job e
  * download de artefato.
  */
+export interface PublishVariablePayload {
+  name: string;
+  preResolveError?: string;
+  preResolveValue?: string;
+  value: string;
+}
+
 export interface PublishJobPayload {
+  batchEngineThread?: string;
+  description?: string;
+  jobTitle?: string;
   levelID: number;
+  publishVariables: PublishVariablePayload[];
+  seq?: number;
+  vtfnodeDesc?: string;
   vtfnodeID: string;
-  publishVariables: unknown[];
+  vtfnodeName?: string;
+  iterations?: number;
+  csvDelimiter?: string | null;
+  csvQuotationMarks?: string | null;
+  configurationId?: number;
   dataSourceProfile: string;
   dataTargetProfile: string;
 }

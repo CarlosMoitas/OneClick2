@@ -1,0 +1,72 @@
+{
+  "jobPubParams": {
+    "scheduledDateTimeInMillisec": "2026-09-29T17:58:21.427Z",
+    "almjobs": [],
+    "rallyJobs": [],
+    "jobParams": [],
+    "publishJobs": [
+      {
+        "batchEngineThread": "ANY",
+        "dataSourceProfile": "",
+        "dataTargetProfile": "",
+        "description": "",
+        "jobTitle": "Group Job",
+        "levelID": 4338,
+        "publishVariables": [
+          {
+            "name": "p_tipo_cnpj",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "01-Numérico"
+          },
+          {
+            "name": "p_porte_empresa",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "01-MICROEMPRESA "
+          },
+          {
+            "name": "p_Const_Empresa",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "00 - EMPRESA INDIVIDUAL"
+          },
+          {
+            "name": "p_projeto_jira",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "ENGPBIA-ENGENHARIA DE PLATAFORMA | BIA TECH"
+          }
+        ],
+        "seq": 1,
+        "vtfnodeDesc": "******GERAR NO MAXIMO 10 CNPJS POR VEZ********",
+        "vtfnodeID": "2430",
+        "vtfnodeName": "Cadastro PJ Alfa - 01 Sócio",
+        "iterations": 1,
+        "csvDelimiter": null,
+        "csvQuotationMarks": null,
+        "configurationId": 2762
+      }
+    ],
+    "testMatches": [],
+    "exportJobs": [],
+    "scheduledDt": "2026-09-29T17:58:21.427Z",
+    "selfServiceEmailMandate": false,
+    "email": "carlosandre.moitas@bradesco.com.br",
+    "globalThreadName": "ANY",
+    "scheduledDateTimeInMillis": 1790704701427,
+    "currentDay": 29,
+    "currentMonth": 9,
+    "currentYear": 2026,
+    "globalSourceConnection": "",
+    "globalTargetConnection": "",
+    "jobSubmissionOrder": "0",
+    "jobTitle": "Cadastro de Clientes PSDC Data Request",
+    "username": "m627529"
+  },
+  "dataDesign": {
+    "projectID": 2956,
+    "versionID": 2957
+  },
+  "advancedToggleFlag": true
+}

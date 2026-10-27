@@ -12,6 +12,10 @@ const WORKFLOW_EMAIL = 'Carlos.AndreMoitas@emeal.nttdata.com';
 const WORKFLOW_USERNAME_FALLBACK = 'm627529';
 const DEFAULT_AGENCY = '3995';
 
+function resolveContaEnvironment(environment: MassaDadosPJEnvironment): string {
+  return environment === 'TI' ? 'PCM2AB  - NOVO TI' : 'PCM2AB  - NOVO TU';
+}
+
 export interface MassaDadosPJJourneyRequest {
   environment?: MassaDadosPJEnvironment;
   agency?: string;
@@ -126,6 +130,8 @@ function buildCadastroClientesPsdcPayload(input: MassaDadosPJJourneyRequest): Su
 function buildContasCorrentesPjPayload(input: MassaDadosPJJourneyRequest): SubmitRequestPayload {
   const now = new Date();
   const username = input.username || WORKFLOW_USERNAME_FALLBACK;
+  const environment = input.environment ?? DEFAULT_WORKFLOW_ENVIRONMENT;
+  const agency = input.agency || DEFAULT_AGENCY;
 
   return {
     jobPubParams: {
@@ -140,9 +146,14 @@ function buildContasCorrentesPjPayload(input: MassaDadosPJJourneyRequest): Submi
           levelID: 2954,
           publishVariables: [
             { name: 'p_tipo_cnpj', preResolveError: '', preResolveValue: '', value: '01-Numérico' },
-            { name: 'p_ambiente_gerar_conta', preResolveError: '', preResolveValue: '', value: 'PCM2AB  - NOVO TI' },
+            {
+              name: 'p_ambiente_gerar_conta',
+              preResolveError: '',
+              preResolveValue: '',
+              value: resolveContaEnvironment(environment),
+            },
             { name: 'P_SEGMENTOCONTACORRENTEPJ', preResolveError: '', preResolveValue: '', value: '000-NAO SEGMENTADA' },
-            { name: 'p_agencia', preResolveError: '', preResolveValue: '', value: '448' },
+            { name: 'p_agencia', preResolveError: '', preResolveValue: '', value: agency },
             { name: 'P_CNPJ', preResolveError: '', preResolveValue: '', value: '0' },
             { name: 'p_porte_empresa_conta', preResolveError: '', preResolveValue: '', value: '03-MÉDIA EMPRESA' },
             { name: 'p_projeto_jira', preResolveError: '', preResolveValue: '', value: WORKFLOW_PROJETO_JIRA },
@@ -178,6 +189,8 @@ function buildContasCorrentesPjPayload(input: MassaDadosPJJourneyRequest): Submi
 function buildContasCorrentesPfPayload(input: MassaDadosPJJourneyRequest): SubmitRequestPayload {
   const now = new Date();
   const username = input.username || WORKFLOW_USERNAME_FALLBACK;
+  const environment = input.environment ?? DEFAULT_WORKFLOW_ENVIRONMENT;
+  const agency = input.agency || DEFAULT_AGENCY;
 
   return {
     jobPubParams: {
@@ -191,9 +204,14 @@ function buildContasCorrentesPfPayload(input: MassaDadosPJJourneyRequest): Submi
           jobTitle: 'Group Job',
           levelID: 3309,
           publishVariables: [
-            { name: 'p_ambiente_gerar_conta', preResolveError: '', preResolveValue: '', value: 'PCM2AB  - NOVO TI' },
+            {
+              name: 'p_ambiente_gerar_conta',
+              preResolveError: '',
+              preResolveValue: '',
+              value: resolveContaEnvironment(environment),
+            },
             { name: 'p_SegmentoContaCorretePF', preResolveError: '', preResolveValue: '', value: '000-CLIENTE CLASSIC' },
-            { name: 'p_agencia', preResolveError: '', preResolveValue: '', value: '448' },
+            { name: 'p_agencia', preResolveError: '', preResolveValue: '', value: agency },
             { name: 'p_cpf', preResolveError: '', preResolveValue: '', value: '0' },
             { name: 'p_qtdcontas_ger', preResolveError: '', preResolveValue: '', value: '1' },
             { name: 'p_projeto_jira', preResolveError: '', preResolveValue: '', value: WORKFLOW_PROJETO_JIRA },

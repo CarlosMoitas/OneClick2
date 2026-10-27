@@ -6,13 +6,18 @@ const tdm_service_1 = require("./tdm.service");
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const error_middleware_1 = require("../middleware/error.middleware");
 const auth_service_1 = require("../auth/auth.service");
+const abertura_contas_journey_service_1 = require("./abertura-contas-journey.service");
 exports.tdmRouter = (0, express_1.Router)();
 /**
  * Todas as rotas de integração com o TDM exigem sessão válida do Portal
  * (JWT emitido por este servidor) — ver `authMiddleware`.
  */
 exports.tdmRouter.use(auth_middleware_1.authMiddleware);
-exports.tdmRouter.post('/requests/submit-and-download', async (req, res, next) => {
+/**
+ * Handler compartilhado por /requests/submit-and-download (legado)
+ * e por todos os endpoints de jornada nomeados.
+ */
+async function submitAndDownloadHandler(req, res, next) {
     try {
         const payload = req.body;
         // Resolve o token TDM do usuário logado — se disponível, os jobs
@@ -41,7 +46,8 @@ exports.tdmRouter.post('/requests/submit-and-download', async (req, res, next) =
     catch (error) {
         next(error);
     }
-});
+}
+exports.tdmRouter.post('/requests/submit-and-download', submitAndDownloadHandler);
 exports.tdmRouter.get('/jobs/:jobId/status', async (req, res, next) => {
     try {
         const jobId = Number(req.params.jobId);
@@ -52,6 +58,19 @@ exports.tdmRouter.get('/jobs/:jobId/status', async (req, res, next) => {
             ? auth_service_1.authService.getUserTdmToken(req.user.username) ?? undefined
             : undefined;
         const result = await tdm_service_1.tdmService.getJobStatus(jobId, req.correlationId, userTdmToken);
+        res.json(result);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.tdmRouter.post('/jornadas/abertura-contas', async (req, res, next) => {
+    try {
+        const { environment, agency, username } = req.body;
+        const userTdmToken = req.user?.username
+            ? auth_service_1.authService.getUserTdmToken(req.user.username) ?? undefined
+            : undefined;
+        const result = await (0, abertura_contas_journey_service_1.executarJornadaAberturaContas)({ environment, agency, username }, req.correlationId, userTdmToken);
         res.json(result);
     }
     catch (error) {

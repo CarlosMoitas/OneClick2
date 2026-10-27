@@ -1,0 +1,90 @@
+{
+  "jobPubParams": {
+    "scheduledDateTimeInMillisec": "2026-10-05T13:03:11.898Z",
+    "almjobs": [],
+    "rallyJobs": [],
+    "jobParams": [],
+    "publishJobs": [
+      {
+        "batchEngineThread": "ANY",
+        "dataSourceProfile": "",
+        "dataTargetProfile": "",
+        "description": "",
+        "jobTitle": "Group Job",
+        "levelID": 3309,
+        "publishVariables": [
+          {
+            "name": "p_ambiente_gerar_conta",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "PCM2AB  - NOVO TI"
+          },
+          {
+            "name": "p_SegmentoContaCorretePF",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "000-CLIENTE CLASSIC"
+          },
+          {
+            "name": "p_agencia",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "448"
+          },
+          {
+            "name": "p_cpf",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "0"
+          },
+          {
+            "name": "p_qtdcontas_ger",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "1"
+          },
+          {
+            "name": "p_projeto_jira",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "ENGPBIA-ENGENHARIA DE PLATAFORMA | BIA TECH"
+          },
+          {
+            "name": "p_tp_disp",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "SEM DISPOSITIVO"
+          }
+        ],
+        "seq": 1,
+        "vtfnodeDesc": "02 - Conta Corrente PF",
+        "vtfnodeID": "11020",
+        "vtfnodeName": "02 - Conta Corrente PF",
+        "iterations": 1,
+        "csvDelimiter": null,
+        "csvQuotationMarks": null,
+        "configurationId": 2985
+      }
+    ],
+    "testMatches": [],
+    "exportJobs": [],
+    "scheduledDt": "2026-10-05T13:03:11.898Z",
+    "selfServiceEmailMandate": false,
+    "email": "carlosandre.moitas@bradesco.com.br",
+    "globalThreadName": "ANY",
+    "scheduledDateTimeInMillis": 1791205391898,
+    "currentDay": 5,
+    "currentMonth": 10,
+    "currentYear": 2026,
+    "globalSourceConnection": "",
+    "globalTargetConnection": "",
+    "jobSubmissionOrder": "0",
+    "jobTitle": "Contas Correntes - PF Data Request",
+    "username": "m627529"
+  },
+  "dataDesign": {
+    "projectID": 2476,
+    "versionID": 2477
+  },
+  "advancedToggleFlag": true
+}

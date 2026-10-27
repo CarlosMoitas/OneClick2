@@ -1,0 +1,66 @@
+{
+  "jobPubParams": {
+    "scheduledDateTimeInMillisec": "2026-09-30T14:33:40.376Z",
+    "almjobs": [],
+    "rallyJobs": [],
+    "jobParams": [],
+    "publishJobs": [
+      {
+        "batchEngineThread": "ANY",
+        "dataSourceProfile": "",
+        "dataTargetProfile": "",
+        "description": "",
+        "jobTitle": "Group Job",
+        "levelID": 4593,
+        "publishVariables": [
+          {
+            "name": "P_AGENCIA_MA",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "448"
+          },
+          {
+            "name": "P_CONTA_MA",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "258367"
+          },
+          {
+            "name": "p_projeto_jira",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "ENGPBIA-ENGENHARIA DE PLATAFORMA | BIA TECH"
+          }
+        ],
+        "seq": 1,
+        "vtfnodeDesc": "Habilitar MA NOVO TI",
+        "vtfnodeID": "540",
+        "vtfnodeName": "Habilitar MA NOVO TI",
+        "iterations": 1,
+        "csvDelimiter": null,
+        "csvQuotationMarks": null,
+        "configurationId": 3032
+      }
+    ],
+    "testMatches": [],
+    "exportJobs": [],
+    "scheduledDt": "2026-09-30T14:33:40.376Z",
+    "selfServiceEmailMandate": false,
+    "email": "carlosandre.moitas@bradesco.com.br",
+    "globalThreadName": "ANY",
+    "scheduledDateTimeInMillis": 1790778820376,
+    "currentDay": 30,
+    "currentMonth": 9,
+    "currentYear": 2026,
+    "globalSourceConnection": "",
+    "globalTargetConnection": "",
+    "jobSubmissionOrder": "0",
+    "jobTitle": "Habilitar Conta no MA Data Request",
+    "username": "m627529"
+  },
+  "dataDesign": {
+    "projectID": 3862,
+    "versionID": 3863
+  },
+  "advancedToggleFlag": true
+}

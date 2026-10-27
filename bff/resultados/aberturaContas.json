@@ -1,0 +1,48 @@
+﻿{
+    "success":  true,
+    "environment":  "TU",
+    "agencyRequested":  "3995",
+    "contaGerada":  {
+                        "agencia":  "3995",
+                        "conta":  "543793"
+                    },
+    "steps":  [
+                  {
+                      "step":  "contas-correntes-pf",
+                      "requestedJobId":  2986754,
+                      "childJobId":  2986755,
+                      "effectiveJobId":  2986755,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  29855,
+                      "extractedContaInfo":  {
+                                                 "found":  true,
+                                                 "agencia":  "3995",
+                                                 "conta":  "543793",
+                                                 "cpfCliente":  "11036597407",
+                                                 "cpfBase":  "110365974"
+                                             }
+                  },
+                  {
+                      "step":  "habilitar-conta-ma",
+                      "requestedJobId":  2986758,
+                      "childJobId":  2986759,
+                      "effectiveJobId":  2986759,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  15486
+                  },
+                  {
+                      "step":  "debito-automatico",
+                      "requestedJobId":  2986762,
+                      "childJobId":  2986763,
+                      "effectiveJobId":  2986763,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  886
+                  }
+              ],
+    "PSComputerName":  "localhost",
+    "RunspaceId":  "f52fca19-4a9b-40a1-917f-d919a6808a13",
+    "PSShowComputerName":  false
+}

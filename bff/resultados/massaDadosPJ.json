@@ -1,0 +1,75 @@
+﻿{
+    "success":  true,
+    "environment":  "TU",
+    "agencyRequested":  "3995",
+    "contaGerada":  {
+                        "agencia":  "448",
+                        "conta":  "264249"
+                    },
+    "cpfCliente":  "55356181957",
+    "steps":  [
+                  {
+                      "step":  "cadastro-clientes-psdc",
+                      "requestedJobId":  2986766,
+                      "childJobId":  2986767,
+                      "effectiveJobId":  2986767,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  1485
+                  },
+                  {
+                      "step":  "contas-correntes-pj",
+                      "requestedJobId":  2986768,
+                      "childJobId":  2986769,
+                      "effectiveJobId":  2986769,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  21077
+                  },
+                  {
+                      "step":  "contas-correntes-pf",
+                      "requestedJobId":  2986778,
+                      "childJobId":  2986779,
+                      "effectiveJobId":  2986779,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  29833,
+                      "extractedContaInfo":  {
+                                                 "found":  true,
+                                                 "agencia":  "448",
+                                                 "conta":  "264249",
+                                                 "cpfCliente":  "55356181957"
+                                             }
+                  },
+                  {
+                      "step":  "habilitar-conta-ma",
+                      "requestedJobId":  2986786,
+                      "childJobId":  2986787,
+                      "effectiveJobId":  2986787,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  15474
+                  },
+                  {
+                      "step":  "incluir-procurador-pj",
+                      "requestedJobId":  2986794,
+                      "childJobId":  2986795,
+                      "effectiveJobId":  2986795,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  986
+                  },
+                  {
+                      "step":  "brob-geracao-contrato",
+                      "requestedJobId":  2986798,
+                      "childJobId":  2986799,
+                      "effectiveJobId":  2986799,
+                      "parentStatus":  "Completed",
+                      "childStatus":  "Completed",
+                      "sizeBytes":  954
+                  }
+              ],
+    "PSComputerName":  "localhost",
+    "RunspaceId":  "f148f6b6-343b-4f0b-af4c-8b5828d1e576",
+    "PSShowComputerName":  false
+}

@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { tdmService } from './tdm.service';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { AppError } from '../middleware/error.middleware';
 import { authService } from '../auth/auth.service';
 import { SubmitRequestPayload } from './tdm.types';
+import { executarJornadaAberturaContas } from './abertura-contas-journey.service';
 
 export const tdmRouter = Router();
 
@@ -44,7 +45,7 @@ tdmRouter.post('/requests/submit-and-download', async (req, res, next) => {
   }
 });
 
-tdmRouter.get('/jobs/:jobId/status', async (req, res, next) => {
+tdmRouter.get('/jobs/:jobId/status', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const jobId = Number(req.params.jobId);
     if (!Number.isFinite(jobId)) {
@@ -56,6 +57,25 @@ tdmRouter.get('/jobs/:jobId/status', async (req, res, next) => {
       : undefined;
     const result = await tdmService.getJobStatus(jobId, req.correlationId, userTdmToken);
     res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Novo endpoint para executar a jornada completa de abertura de contas (cta-003)
+tdmRouter.post('/jornadas/abertura-contas', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // O body pode receber: { environment, agency, username }
+    const { environment, agency, username } = req.body;
+    // userTdmToken pode ser passado explicitamente ou herdado da autenticação atual
+    const userTdmToken = req.user?.username ? authService.getUserTdmToken(req.user.username) ?? undefined : undefined;
+
+    const response = await executarJornadaAberturaContas(
+      { environment, agency, username },
+      req.correlationId,
+      userTdmToken,
+    );
+    res.json(response);
   } catch (error) {
     next(error);
   }

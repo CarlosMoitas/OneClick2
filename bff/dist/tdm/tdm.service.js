@@ -149,7 +149,17 @@ async function submitAndDownload(payload, correlationId, userToken) {
         },
     }, userToken, correlationId);
     if (submitResponse.status < 200 || submitResponse.status >= 300) {
-        throw new error_middleware_1.AppError(502, 'TDM retornou erro ao executar o request.', 'TDM_SUBMIT_FAILED', submitResponse.data);
+        // Mesmo com status não-2xx, o TDM pode ter criado o job e incluído o
+        // jobId no corpo da resposta. Isso ocorre quando o job é persistido com
+        // sucesso mas a entrega da resposta HTTP falha (ex.: redirect 302 após
+        // criação do recurso, erro interno de serialização do TDM depois de
+        // registrar o job, etc.). Se o jobId estiver presente no corpo, o job
+        // existe no TDM e o fluxo de polling deve continuar normalmente.
+        const recoveredJobId = extractJobId(submitResponse.data);
+        if (!recoveredJobId) {
+            throw new error_middleware_1.AppError(502, 'TDM retornou erro ao executar o request.', 'TDM_SUBMIT_FAILED', submitResponse.data);
+        }
+        logger_1.logger.warn(`TDM retornou status HTTP ${submitResponse.status} na submissão, mas jobId ${recoveredJobId} encontrado no corpo — job foi criado. Continuando polling.`, correlationId, { httpStatus: submitResponse.status, responseData: submitResponse.data });
     }
     const requestedJobId = extractJobId(submitResponse.data);
     if (!requestedJobId) {
@@ -186,16 +196,24 @@ async function submitAndDownload(payload, correlationId, userToken) {
                     });
                     throw new error_middleware_1.AppError(502, 'Tabela DB2 indisponível (SQLCODE=-904). O job foi encerrado pelo TDM. Tente novamente mais tarde.', 'TDM_DB2_TABLE_UNAVAILABLE', failedParent);
                 }
+                if (info.db2DuplicateKey) {
+                    logger_1.logger.warn('SQLCODE=-803 detectado no artefato de job falho', correlationId, {
+                        requestedJobId,
+                        candidateJobId,
+                    });
+                    throw new error_middleware_1.AppError(409, 'Dado já cadastrado no sistema (SQLCODE=-803 — chave duplicada). Verifique se o cliente já possui cadastro ativo antes de tentar novamente.', 'TDM_DB2_DUPLICATE_KEY', failedParent);
+                }
             }
             catch (downloadError) {
-                // Se o próprio erro for o nosso AppError de DB2, propaga.
+                // Se o próprio erro for um dos nossos AppErrors de diagnóstico DB2, propaga.
                 if (downloadError instanceof error_middleware_1.AppError &&
-                    downloadError.code === 'TDM_DB2_TABLE_UNAVAILABLE') {
+                    (downloadError.code === 'TDM_DB2_TABLE_UNAVAILABLE' ||
+                        downloadError.code === 'TDM_DB2_DUPLICATE_KEY')) {
                     throw downloadError;
                 }
                 // Qualquer outro erro no download (ex.: artefato não disponível) é
                 // registrado mas não mascara o erro original de job falho.
-                logger_1.logger.warn('Não foi possível baixar artefato do job falho para diagnóstico de SQLCODE=-904', correlationId, downloadError);
+                logger_1.logger.warn('Não foi possível baixar artefato do job falho para diagnóstico de SQLCODE DB2', correlationId, downloadError);
             }
         }
         // Re-lança o erro original (TDM_JOB_FAILED ou qualquer outro).

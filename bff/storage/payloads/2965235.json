@@ -1,0 +1,72 @@
+{
+  "jobPubParams": {
+    "scheduledDateTimeInMillisec": "2026-10-09T20:26:29.827Z",
+    "almjobs": [],
+    "rallyJobs": [],
+    "jobParams": [],
+    "publishJobs": [
+      {
+        "batchEngineThread": "ANY",
+        "dataSourceProfile": "",
+        "dataTargetProfile": "",
+        "description": "",
+        "jobTitle": "Group Job",
+        "levelID": 3211,
+        "publishVariables": [
+          {
+            "name": "p_agcontr",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "448"
+          },
+          {
+            "name": "p_contacontr",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "263406"
+          },
+          {
+            "name": "p_cpf_brob",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "420193891"
+          },
+          {
+            "name": "p_projeto_jira",
+            "preResolveError": "",
+            "preResolveValue": "",
+            "value": "ENGPBIA-ENGENHARIA DE PLATAFORMA | BIA TECH"
+          }
+        ],
+        "seq": 1,
+        "vtfnodeDesc": "BROB - Geração de Contrato",
+        "vtfnodeID": "420",
+        "vtfnodeName": "BROB - Geração de Contrato",
+        "iterations": 1,
+        "csvDelimiter": null,
+        "csvQuotationMarks": null,
+        "configurationId": 2067
+      }
+    ],
+    "testMatches": [],
+    "exportJobs": [],
+    "scheduledDt": "2026-10-09T20:26:29.827Z",
+    "selfServiceEmailMandate": false,
+    "email": "carlosandre.moitas@bradesco.com.br",
+    "globalThreadName": "ANY",
+    "scheduledDateTimeInMillis": 1791577589827,
+    "currentDay": 9,
+    "currentMonth": 10,
+    "currentYear": 2026,
+    "globalSourceConnection": "",
+    "globalTargetConnection": "",
+    "jobSubmissionOrder": "1",
+    "jobTitle": "BROB - Geração de Contrato Data Request",
+    "username": "m627529"
+  },
+  "dataDesign": {
+    "projectID": 3138,
+    "versionID": 3139
+  },
+  "advancedToggleFlag": true
+}

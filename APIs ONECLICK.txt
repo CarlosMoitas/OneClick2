@@ -1,0 +1,370 @@
+curl -X POST http://localhost:3000/api/jornadas/abertura-contas -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtNjI3NTI5IiwidXNlcm5hbWUiOiJtNjI3NTI5Iiwicm9sZXMiOlsidXNlciJdLCJpYXQiOjE3OTE1NDU4NjAsImV4cCI6MTc5MTU3NDY2MH0.ofuBNxXFHnTbhW6McQP3Q6fyn6uQldtwGrHRdnbh7OE" -d "{\"environment\":\"TU\",\"agency\":\"3995\",\"username\":\"m627529\"}"
+curl -X POST http://localhost:3000/api/jornadas/massa-dados-pj -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtNjI3NTI5IiwidXNlcm5hbWUiOiJtNjI3NTI5Iiwicm9sZXMiOlsidXNlciJdLCJpYXQiOjE3OTE1NDU4NjAsImV4cCI6MTc5MTU3NDY2MH0.ofuBNxXFHnTbhW6McQP3Q6fyn6uQldtwGrHRdnbh7OE" -d "{\"environment\":\"TU\",\"agency\":\"3995\",\"username\":\"m627529\"}"
+Task Completed
+
+curl -X POST http://localhost:3000/api/jornadas/massa-dados-pj -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtNjI3NTI5IiwidXNlcm5hbWUiOiJtNjI3NTI5Iiwicm9sZXMiOlsidXNlciJdLCJpYXQiOjE3OTE4ODk4MjQsImV4cCI6MTc5MTkxODYyNH0.KB-UnBwg4v69dLzxUBzCXZN9r-zFwaX50y31qwy9PTI
+" -d "{\"environment\":\"TU\",\"agency\":\"3995\",\"username\":\"m627529\"}"
+
+
+
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtNjI3NTI5IiwidXNlcm5hbWUiOiJtNjI3NTI5Iiwicm9sZXMiOlsidXNlciJdLCJpYXQiOjE3OTE4ODk4MjQsImV4cCI6MTc5MTkxODYyNH0.KB-UnBwg4v69dLzxUBzCXZN9r-zFwaX50y31qwy9PTI
+
+
+
+
+
+Sim, é possível fazer para o card __cta-005 Massa de Dados PJ__ exatamente no mesmo padrão do card __cta-003 `/api/jornadas/abertura-contas`__, sem precisar mudar a arquitetura do BFF.
+
+## Conclusão objetiva
+
+A implementação é viável porque o projeto já tem todos os blocos necessários:
+
+- mount central no `app.ts` com `app.use('/api', tdmRouter)`
+- autenticação no `tdmRouter`
+- `tdmService.submitAndDownload(...)` já pronto
+- infraestrutura de extração de artefato no BFF
+- builders e documentação funcional das etapas
+- padrão já validado com o card 003
+
+---
+
+## Por que é possível
+
+Comparando com o cta-003, o cta-005 precisa das mesmas peças arquiteturais:
+
+### O que já existe e pode ser reaproveitado
+
+1. __Exposição de rota via `tdmRouter`__
+
+   - já existe no padrão:
+     - `POST /api/jornadas/abertura-contas`
+
+2. __Orquestrador dedicado por jornada__
+
+   - no cta-003:
+     - `executarJornadaAberturaContas(...)`
+   - no cta-005, seria o mesmo conceito:
+     - `executarJornadaMassaDadosPJ(...)`
+
+3. __Submissão + polling + download do artefato__
+
+   - reaproveitando:
+     - `tdmService.submitAndDownload(...)`
+
+4. __Extração de dados do ZIP__
+
+   - no cta-003 já é usada para agência/conta
+   - no cta-005 ela também é necessária, com uma extração adicional de CPF
+
+5. __Encadeamento entre etapas__
+
+   - o cta-003 encadeia 3 etapas
+   - o cta-005 encadeia 6 etapas
+   - tecnicamente é o mesmo padrão, só muda a quantidade e os parâmetros propagados
+
+---
+
+## O que o cta-005 exige a mais
+
+O card 005 é mais complexo que o 003, mas continua compatível com o mesmo modelo.
+
+### Cadeia do cta-005
+
+1. Cadastro de Clientes PSDC
+2. Contas Correntes PJ
+3. Contas Correntes PF
+4. Habilitar Conta no MA
+5. Incluir Procurador PJ
+6. BROB Geração de Contrato
+
+### Variáveis que precisam ser propagadas
+
+Saem da etapa 3:
+
+- `agencia`
+- `conta`
+- `cpfCliente`
+
+Usos:
+
+- `agencia` + `conta` → etapas 4 e 5
+- `cpfCliente` → etapa 6
+
+Isso é totalmente compatível com o padrão do card 003, onde:
+
+- a etapa 1 gera artefato
+- o backend extrai conta/agência
+- propaga para as próximas etapas
+
+No cta-005, a diferença é que a etapa 3 gera mais informação e alimenta mais etapas.
+
+---
+
+## O que eu faria, sem mexer agora
+
+Se fosse implementar, eu seguiria exatamente esta linha:
+
+### 1. Criar um service dedicado da jornada
+
+Arquivo previsto:
+
+- `bff/src/tdm/massa-dados-pj-journey.service.ts`
+
+Responsabilidade:
+
+- orquestrar as 6 etapas
+- montar os payloads
+- chamar `tdmService.submitAndDownload(...)`
+- extrair `agencia`, `conta` e `cpfCliente` do artefato da etapa 3
+- propagar as variáveis para etapas 4, 5 e 6
+- retornar uma resposta consolidada por step
+
+---
+
+### 2. Reaproveitar a montagem do endpoint no mesmo router
+
+Arquivo:
+
+- `bff/src/tdm/tdm.routes.ts`
+
+Seguir exatamente o padrão do 003:
+
+- ler `environment`, `agency`, `username` do body
+- resolver `userTdmToken`
+- chamar o service da jornada
+- devolver `res.json(result)`
+
+Endpoint final esperado:
+
+```http
+POST /api/jornadas/massa-dados-pj
+```
+
+Porque no `app.ts` já existe:
+
+```ts
+app.use('/api', tdmRouter);
+```
+
+E bastaria no router declarar:
+
+```ts
+tdmRouter.post('/jornadas/massa-dados-pj', ...)
+```
+
+---
+
+### 3. Reutilizar o `tdmService.submitAndDownload`
+
+Sem criar nova infraestrutura de integração.
+
+Mesma ideia do cta-003:
+
+- submit do job
+- polling até fim
+- resolve child job
+- baixa artefato
+- processa resultado
+
+---
+
+### 4. Reutilizar a infraestrutura de extração do artefato
+
+Arquivo base:
+
+- `bff/src/storage/artifact-extractor.ts`
+
+O que precisaria fazer:
+
+- manter a extração de agência/conta
+
+- adicionar ou reaproveitar parser para localizar:
+
+  - `CCGC_CPF`
+  - `CCTRL_CPF_CGC`
+
+- aplicar:
+
+  - leftPad 9 para CPF base
+  - leftPad 2 para dígito
+
+- compor:
+  - `cpfCliente`
+
+Não mexa no card 003 deixe intocada a execução do card 005 não toque na logica mem nas execuções e processos dos dois cards
+
+### 5. Criar builders internos no service da jornada
+
+No mesmo estilo do card 003.
+
+Exemplo de funções previstas:
+
+- `buildCadastroClientesPsdcPayload(...)`
+- `buildContasCorrentesPjPayload(...)`
+- `buildContasCorrentesPfPayload(...)`
+- `buildHabilitarContaMaPayload(...)`
+- `buildIncluirProcuradorPjPayload(...)`
+- `buildBrobGeracaoContratoPayload(...)`
+
+E também uma base comum para campos repetidos, como no cta-003:
+
+- username
+- datas
+- email
+- ordem
+- flags técnicas
+Não mexa no card 003 deixe intocada a execução do card 005 não toque na logica mem nas execuções e processos dos dois cards---
+
+### 6. Retornar resposta consolidada
+
+Seguindo o padrão do cta-003, eu faria a resposta conter:
+
+- `success`
+
+- `environment`
+
+- `agencyRequested` ou `agencyUsed`
+
+- talvez um bloco com os dados extraídos:
+
+  - `agencia`
+  - `conta`
+  - `cpfCliente`
+
+- `steps[]` com:
+
+  - step
+  - requestedJobId
+  - childJobId
+  - effectiveJobId
+  - parentStatus
+  - childStatus
+  - sizeBytes
+  - opcionalmente informações extraídas na etapa 3
+
+Não mexa no card 003 deixe intocada a execução do card 005 não toque na logica mem nas execuções e processos dos dois cards---
+
+
+### 7. Documentar como foi feito no card 003
+
+Criar documentação no mesmo padrão de:
+
+- `docs/api-jornada-abertura-contas.md`
+
+Arquivo previsto:
+
+- `docs/api-jornada-massa-dados-pj.md`
+
+Conteúdo:
+
+- objetivo
+- endpoint
+- autenticação
+- request body
+- fluxo das 6 etapas
+- regras de extração
+- exemplo de resposta
+- curl de consumo
+
+Não mexa no card 003 deixe intocada a execução do card 005 não toque na logica mem nas execuções e processos dos dois cards---
+
+
+## Diferenças em relação ao cta-003
+
+A arquitetura é a mesma, mas o cta-005 tem estes pontos adicionais:
+
+1. __Mais etapas__
+
+   - 6 em vez de 3
+
+2. __Extração mais rica__
+
+   - além de agência/conta, precisa compor `cpfCliente`
+
+3. __Mais dependências entre etapas__
+
+   - etapa 3 abastece 4, 5 e 6
+
+4. __Maior sensibilidade a falhas__
+
+   - se a extração do artefato falhar, a jornada para
+   - isso precisa de mensagens de erro funcionais claras
+
+Mesmo assim, nada disso impede a implementação.
+
+---
+
+## Riscos e cuidados
+
+Os principais cuidados seriam:
+
+- garantir que os payloads sejam fiéis aos builders do frontend
+- garantir que a extração do log da etapa 3 esteja robusta
+- garantir que o endpoint final fique exatamente em:
+  - `/api/jornadas/massa-dados-pj`
+- não duplicar `/jornadas` por erro de mount
+- manter a autenticação igual à do 003
+- manter tipagem compatível com `SubmitRequestPayload`
+
+---
+
+## Resposta final
+
+__Sim, é plenamente possível expor a API do card cta-005 Massa de Dados PJ no mesmo padrão do card cta-003.__
+
+### O que eu faria
+
+- criar um orquestrador dedicado da jornada
+- adicionar a rota no `tdmRouter`
+- expor via `app.use('/api', tdmRouter)`
+- reaproveitar `tdmService.submitAndDownload`
+- reaproveitar `artifact-extractor.ts`
+- montar os 6 payloads no backend
+- extrair `agencia`, `conta` e `cpfCliente` da etapa 3
+- propagar os dados entre as etapas
+- devolver resposta consolidada
+- documentar a nova API
+
+Tudo isso pode ser feito __sem alterar o padrão arquitetural já usado no card 003__.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sim, posso implementar a API para o card 005 Massa de Dados PJ (cta-005) exatamente conforme o padrão sugerido e já validado no card 003, mantendo toda a lógica e processos do card 003 absolutamente inalterados e íntegros.
+
+
+
+
+
+
+
+
+
+__Resumo do que seria feito para o cta-005:__
+
+- Criar orquestrador dedicado da jornada massa de dados PJ no backend (`massa-dados-pj-journey.service.ts`);
+- Montar os payloads fiéis aos builders frontend para as 6 etapas, propagando agência, conta e cpfCliente extraídos do ZIP da etapa 3;
+- Chamar o TDM por meio de `tdmService.submitAndDownload` sequencialmente;
+- Integrar o parser de artefato/ZIP para extrair as variáveis necessárias (inclusive o leftpad do CPF);
+- Declarar um endpoint novo em `tdmRouter` específico para o cta-005: `POST /jornadas/massa-dados-pj`
+- O endpoint final exposto será: `POST /api/jornadas/massa-dados-pj` (seguindo o padrão de mount já existente);
+- Proteger a rota exatamente como no card 003 (JWT, token do usuário se disponível);
+- Retornar uma resposta consolidada com steps, similar ao que já existe no card 003;
+- Criar documentação `.md` para a nova API, descrevendo entradas, saídas e exemplos;
+- __Não tocar em nenhuma linha, configuração, lógica ou endpoint do card 003__.
+
+__Conclusão:__\
+A arquitetura e ferramentas do projeto permitem expor a jornada cta-005 por API no mesmo padrão robusto já usado para o card 003, sem qualquer impacto na jornada existente.
+
+Basta aprovar para iniciar.

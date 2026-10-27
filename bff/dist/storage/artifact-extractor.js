@@ -7,25 +7,35 @@ exports.extractAccountInfoFromZip = extractAccountInfoFromZip;
 const adm_zip_1 = __importDefault(require("adm-zip"));
 const TARGET_LOG_SUFFIX = 'Action_38_1_Workflow.log';
 const SQLCODE_904 = 'SQLCODE=-904';
+const SQLCODE_803 = 'SQLCODE=-803';
 /**
- * Varre TODOS os arquivos .log contidos no ZIP procurando pelo código de
- * erro DB2 SQLCODE=-904 (objeto indisponível/tabela bloqueada).
- * Retorna `true` assim que a primeira ocorrência for encontrada.
+ * Varre TODOS os arquivos .log contidos no ZIP em uma única passagem,
+ * procurando pelos códigos de erro DB2 conhecidos:
+ *   - SQLCODE=-904: objeto/tabela indisponível (bloqueio, manutenção)
+ *   - SQLCODE=-803: violação de chave única (registro duplicado)
+ *
+ * Retorna flags independentes para cada código encontrado.
  */
-function detectDb2TableUnavailable(entries) {
+function scanDb2Errors(entries) {
+    let tableUnavailable = false;
+    let duplicateKey = false;
     for (const entry of entries) {
         if (!entry.entryName.toLowerCase().endsWith('.log'))
             continue;
         try {
             const content = entry.getData().toString('utf8');
             if (content.includes(SQLCODE_904))
-                return true;
+                tableUnavailable = true;
+            if (content.includes(SQLCODE_803))
+                duplicateKey = true;
         }
         catch {
             // ignora entradas ilegíveis — não bloqueia a análise dos demais logs
         }
+        if (tableUnavailable && duplicateKey)
+            break; // ambos encontrados, encerra cedo
     }
-    return false;
+    return { tableUnavailable, duplicateKey };
 }
 /**
  * Garante que o arquivo de log correto seja buscado pelo ID real do artefato (.zip)
@@ -169,13 +179,14 @@ function extractAccountInfoFromZip(buffer, effectiveJobId) {
         }
     }
     const found = Boolean(agencia && conta);
-    const db2TableUnavailable = detectDb2TableUnavailable(entries) || undefined;
+    const { tableUnavailable, duplicateKey } = scanDb2Errors(entries);
     return {
         found,
         agencia,
         conta,
         cpfCliente,
-        db2TableUnavailable,
+        db2TableUnavailable: tableUnavailable || undefined,
+        db2DuplicateKey: duplicateKey || undefined,
         reason: found || cpfCliente
             ? undefined
             : !workflowEntry && !cpfEntry

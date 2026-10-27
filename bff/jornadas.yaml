@@ -1,0 +1,32 @@
+login:
+  url: "http://localhost:4200/gw/auth/login"
+  username: "m627529"
+  passwordEnv: "BIAT_PASSWORD"
+
+defaults:
+  environment: "TU"
+  agency: "3995"
+  username: "m627529"
+
+steps:
+  - name: "Abertura de Contas"
+    enabled: true
+    method: "POST"
+    url: "http://localhost:3000/api/jornadas/abertura-contas"
+    body:
+      environment: "${defaults.environment}"
+      agency: "${defaults.agency}"
+      username: "${defaults.username}"
+    saveResponseAs: "aberturaContas"
+    onError: "stop"
+
+  - name: "Massa Dados PJ"
+    enabled: true
+    method: "POST"
+    url: "http://localhost:3000/api/jornadas/massa-dados-pj"
+    body:
+      environment: "${defaults.environment}"
+      agency: "${defaults.agency}"
+      username: "${defaults.username}"
+    saveResponseAs: "massaDadosPJ"
+    onError: "stop"
